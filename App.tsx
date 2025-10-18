@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ClassGroup, ClassArrangementInfo } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { useArrangements } from './hooks/useArrangements';
 import ClassGroupSelector from './components/ClassGroupSelector';
 import Dashboard from './components/Dashboard';
 import LessonPlanBuilder from './components/LessonPlanBuilder';
 import { CLASS_GROUPS } from './constants';
 import Card from './components/common/Card';
 import Button from './components/common/Button';
+import { downloadArrangementsAsJSON, uploadArrangementsFromFile } from './services/arrangementService';
 
 // ========== Setup Modal Component ==========
 
@@ -96,10 +98,18 @@ const defaultArrangement: ClassArrangementInfo = {
 };
 
 const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
-    const [arrangements, setArrangements] = useLocalStorage<ClassArrangementInfo[]>('classArrangements', [defaultArrangement]);
+    const {
+        arrangements,
+        loading,
+        error,
+        saveArrangement,
+        deleteArrangement: dbDeleteArrangement,
+        loadArrangements
+    } = useArrangements();
     const [isManaging, setIsManaging] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassArrangementInfo | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleManageClick = () => {
         if (isManaging) {
@@ -133,28 +143,61 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = (classId: string) => {
+    const handleDelete = async (classId: string) => {
         if (window.confirm('您確定要刪除此課程嗎？')) {
-            setArrangements(prev => prev.filter(c => c.id !== classId));
+            try {
+                await dbDeleteArrangement(classId);
+                alert('課程已成功刪除！');
+            } catch (err) {
+                alert('刪除課程失敗，請稍後再試。');
+            }
         }
     };
 
-    const handleSave = (classInfo: ClassArrangementInfo) => {
-        setArrangements(prev => {
-            const exists = prev.some(c => c.id === classInfo.id);
-            if (exists) {
-                return prev.map(c => c.id === classInfo.id ? classInfo : c);
-            } else {
-                return [...prev, classInfo];
-            }
-        });
-        setIsModalOpen(false);
-        setEditingClass(null);
+    const handleSave = async (classInfo: ClassArrangementInfo) => {
+        try {
+            await saveArrangement(classInfo);
+            setIsModalOpen(false);
+            setEditingClass(null);
+            alert('課程已成功儲存！');
+        } catch (err) {
+            alert('儲存課程失敗，請稍後再試。');
+        }
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingClass(null);
+    };
+
+    const handleExport = async () => {
+        try {
+            await downloadArrangementsAsJSON();
+        } catch (err) {
+            alert('匯出課程失敗，請稍後再試。');
+        }
+    };
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            await uploadArrangementsFromFile(file);
+            await loadArrangements();
+            alert('課程已成功匯入！');
+        } catch (err) {
+            alert('匯入課程失敗，請檢查檔案格式。');
+        }
+
+        // Reset file input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     return (
@@ -175,17 +218,50 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
               </div>
             </header>
             <main className="flex-grow container mx-auto p-4 md:p-8">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
                     <h2 className="text-2xl font-bold text-brand-dark">季度課程表</h2>
-                    {isManaging && (
-                        <Button onClick={handleAddNew} className="flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
-                            <span>新增課程</span>
-                        </Button>
-                    )}
+                    <div className="flex items-center space-x-2">
+                        {isManaging && (
+                            <>
+                                <Button onClick={handleAddNew} className="flex items-center space-x-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
+                                    <span>新增課程</span>
+                                </Button>
+                                <Button onClick={handleImportClick} variant="secondary" className="flex items-center space-x-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg>
+                                    <span>匯入</span>
+                                </Button>
+                                <Button onClick={handleExport} variant="secondary" className="flex items-center space-x-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                                    <span>匯出</span>
+                                </Button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    accept=".json"
+                                    style={{ display: 'none' }}
+                                />
+                            </>
+                        )}
+                    </div>
                 </div>
 
-                {arrangements.length > 0 ? (
+                {loading && (
+                    <div className="text-center py-20">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-primary"></div>
+                        <p className="mt-4 text-gray-500">載入中...</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                        <p className="font-medium">錯誤</p>
+                        <p>{error}</p>
+                    </div>
+                )}
+
+                {!loading && arrangements.length > 0 ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {arrangements.map(arrangement => (
                             <Card key={arrangement.id} className="flex flex-col">
@@ -211,13 +287,13 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
                             </Card>
                         ))}
                     </div>
-                ) : (
+                ) : !loading ? (
                     <div className="text-center py-20 bg-brand-light rounded-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-16 w-16 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" /></svg>
                         <h3 className="mt-4 text-xl font-medium text-brand-dark">尚未安排課程</h3>
                         <p className="mt-2 text-gray-500">點擊「管理課程」按鈕以新增第一門課程。</p>
                     </div>
-                )}
+                ) : null}
             </main>
             {isModalOpen && editingClass && (
                 <SetupModal 
