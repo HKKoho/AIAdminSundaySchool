@@ -1,0 +1,72 @@
+[
+  {
+    "id": "class-elder-1",
+    "time": "主日 11:30 AM",
+    "beginningDate": "2026年1月5日",
+    "duration": "1 小時",
+    "place": "講台下右邊",
+    "teacher": "張淑佳牧師",
+    "focusLevel": "利未記 - 初讀",
+    "group": "長者班"
+  },
+  {
+    "id": "class-mentor-1",
+    "time": "主日 11:30 AM",
+    "beginningDate": "2026年1月5日",
+    "duration": "1 小時",
+    "place": "講台",
+    "teacher": "黃月保執事",
+    "focusLevel": "報名參加",
+    "group": "導修班"
+  },
+  {
+    "id": "class-beginner-1",
+    "time": "主日 11:30 AM",
+    "beginningDate": "2026年1月5日",
+    "duration": "1 小時",
+    "place": "廚房外面",
+    "teacher": "陳潤生傳道 + 葉國良弟兄",
+    "focusLevel": "以弗所 + 歌羅西",
+    "group": "初讀班"
+  },
+  {
+    "id": "class-application-1",
+    "time": "主日 11:30 AM",
+    "beginningDate": "2026年1月5日",
+    "duration": "1 小時",
+    "place": "音響室前",
+    "teacher": "熊天佑弟兄",
+    "focusLevel": "約伯記、箴言、傳道書 - 反常、正常、無常的人生",
+    "group": "應用班"
+  },
+  {
+    "id": "class-youth-1",
+    "time": "主日 11:30 AM",
+    "beginningDate": "2026年1月5日",
+    "duration": "1 小時",
+    "place": "升降🚗前",
+    "teacher": "劉維廣傳道",
+    "focusLevel": "交流少年時代有趣的事",
+    "group": "少年班"
+  },
+  {
+    "id": "class-gospel-1",
+    "time": "主日 11:30 AM",
+    "beginningDate": "有需要",
+    "duration": "1 小時",
+    "place": "音響室前與近門前",
+    "teacher": "錢振玉姊妹",
+    "focusLevel": "",
+    "group": "福音班"
+  },
+  {
+    "id": "class-growth-1",
+    "time": "主日 11:30 AM",
+    "beginningDate": "有需要",
+    "duration": "1 小時",
+    "place": "傳道房或教會外",
+    "teacher": "譚約平弟兄",
+    "focusLevel": "初信",
+    "group": "成長8課"
+  }
+]

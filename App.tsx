@@ -86,17 +86,6 @@ interface ClassArrangementProps {
     onBack: () => void;
 }
 
-const defaultArrangement: ClassArrangementInfo = {
-    id: `class-${Date.now()}`,
-    time: '主日 10:00 AM',
-    beginningDate: '本季第一個主日',
-    duration: '1 小時',
-    place: '大廳',
-    teacher: '待定',
-    focusLevel: '基礎聖經研讀',
-    group: '混合成人',
-};
-
 const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
     const {
         arrangements,
@@ -104,7 +93,8 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
         error,
         saveArrangement,
         deleteArrangement: dbDeleteArrangement,
-        loadArrangements
+        loadArrangements,
+        useMongoDB
     } = useArrangements();
     const [isManaging, setIsManaging] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -254,9 +244,17 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
                     </div>
                 )}
 
-                {error && (
+                {error && !useMongoDB && (
+                    <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
+                        <p className="font-medium">ℹ️ 資訊</p>
+                        <p>{error}</p>
+                        <p className="text-sm mt-2">資料儲存在瀏覽器本地，不會同步到雲端。若需使用雲端儲存，請在 Vercel 設定 MongoDB 環境變數。</p>
+                    </div>
+                )}
+
+                {error && useMongoDB && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                        <p className="font-medium">錯誤</p>
+                        <p className="font-medium">❌ 錯誤</p>
                         <p>{error}</p>
                     </div>
                 )}

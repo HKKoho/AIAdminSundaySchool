@@ -12,6 +12,19 @@ export interface ArrangementResponse {
 export async function fetchAllArrangements(): Promise<ClassArrangementInfo[]> {
   try {
     const response = await fetch(`${API_BASE_URL}`);
+
+    // Check if response is ok
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Try to parse JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(`Expected JSON, got: ${text.substring(0, 100)}`);
+    }
+
     const result: ArrangementResponse = await response.json();
 
     if (result.success && Array.isArray(result.data)) {
