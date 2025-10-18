@@ -2,13 +2,13 @@ import { GoogleGenAI } from "@google/genai";
 import { AIPersona } from '../constants';
 
 // Ensure the API key is available in the environment variables
-const API_KEY = process.env.API_KEY;
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 if (!API_KEY) {
   console.warn("API_KEY environment variable not set. AI features will not work.");
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
+const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 export const generateLessonIdeas = async (topic: string, ageGroup: string, persona: AIPersona): Promise<string> => {
   if (!API_KEY) {
@@ -47,6 +47,10 @@ export const generateLessonIdeas = async (topic: string, ageGroup: string, perso
     - 使用清晰的 Markdown 格式（標題、粗體、列表）。
     - 以溫暖、鼓勵和導師般的語氣書寫，與你的角色設定保持一致。
   `;
+
+  if (!ai) {
+    throw new Error("API 金鑰未設定。");
+  }
 
   try {
     const response = await ai.models.generateContent({
