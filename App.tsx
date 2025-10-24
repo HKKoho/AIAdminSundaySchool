@@ -5,6 +5,7 @@ import { useArrangements } from './hooks/useArrangements';
 import ClassGroupSelector from './components/ClassGroupSelector';
 import Dashboard from './components/Dashboard';
 import LessonPlanBuilder from './components/LessonPlanBuilder';
+import RollCallSystem from './components/RollCallSystem';
 import { CLASS_GROUPS } from './constants';
 import Card from './components/common/Card';
 import Button from './components/common/Button';
@@ -307,10 +308,45 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
     );
 };
 
+// ========== Roll Call Component ==========
+
+interface RollCallProps {
+    onBack: () => void;
+}
+
+const RollCall: React.FC<RollCallProps> = ({ onBack }) => {
+    return (
+        <div className="min-h-screen flex flex-col bg-gray-50 text-gray-800">
+            <header className="bg-green-600 text-white p-4 shadow-md">
+                <div className="container mx-auto flex justify-between items-center">
+                    <div className="flex items-center space-x-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <h1 className="text-2xl font-bold">點名系統</h1>
+                            <p className="text-xs text-green-100 opacity-80 -mt-1">學生出席管理</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <button onClick={onBack} className="text-sm hover:underline">返回首頁</button>
+                    </div>
+                </div>
+            </header>
+            <main className="flex-grow container mx-auto p-4 md:p-8">
+                <RollCallSystem />
+            </main>
+            <footer className="text-center p-4 text-gray-500 text-sm">
+                <p>&copy; {new Date().getFullYear()} 教師支援工具。版權所有。</p>
+            </footer>
+        </div>
+    );
+};
+
 // ========== Landing Page Component ==========
 
 interface LandingPageProps {
-  onSelectView: (view: 'classes' | 'support') => void;
+  onSelectView: (view: 'classes' | 'support' | 'rollcall') => void;
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
@@ -320,7 +356,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
         <h1 className="text-5xl font-extrabold text-brand-dark">主日學中心</h1>
         <p className="text-xl text-gray-600 mt-4">您的教學與組織一站式資源。</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
         <Card onClick={() => onSelectView('classes')} className="group text-center">
             <div className="p-6 bg-brand-primary group-hover:bg-brand-dark transition-colors duration-300 flex justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -335,8 +371,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
             </div>
             <div className="p-8">
-                <h2 className="text-3xl font-bold text-brand-dark">教師支援</h2>
+                <h2 className="text-3xl font-bold text-brand-dark">Teacher Support</h2>
                 <p className="text-gray-600 mt-2">AI 驅動的課程計畫、創意生成及資源。</p>
+            </div>
+        </Card>
+        <Card onClick={() => onSelectView('rollcall')} className="group text-center">
+            <div className="p-6 bg-green-600 group-hover:bg-green-700 transition-colors duration-300 flex justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div className="p-8">
+                <h2 className="text-3xl font-bold text-brand-dark">點名</h2>
+                <p className="text-gray-600 mt-2">管理學生出席與點名記錄。</p>
             </div>
         </Card>
       </div>
@@ -439,7 +484,7 @@ const SupportApp: React.FC = () => {
 // ========== Main App Router ==========
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'landing' | 'classes' | 'support'>('landing');
+  const [view, setView] = useState<'landing' | 'classes' | 'support' | 'rollcall'>('landing');
 
   const renderContent = () => {
     switch (view) {
@@ -447,6 +492,8 @@ const App: React.FC = () => {
         return <ClassArrangement onBack={() => setView('landing')} />;
       case 'support':
         return <SupportApp />;
+      case 'rollcall':
+        return <RollCall onBack={() => setView('landing')} />;
       case 'landing':
       default:
         return <LandingPage onSelectView={setView} />;
