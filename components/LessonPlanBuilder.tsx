@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ClassGroup, Lesson, QuarterlyPlan } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import Button from './common/Button';
-import { generateLessonIdeas } from '../services/geminiService';
+import { generateLessonIdeas } from '../services/multiProviderChatService';
 import { AI_PERSONAS } from '../constants';
 
 interface LessonPlanBuilderProps {
@@ -84,7 +84,7 @@ const LessonPlanBuilder: React.FC<LessonPlanBuilderProps> = ({ selectedGroup, pl
         const ideas = await generateLessonIdeas(lesson.topic, selectedGroup, currentPersona);
         setIdea(ideas);
       } catch (err) {
-        setError('生成創意失敗。請檢查您的 API 金鑰並再試一次。');
+        setError('生成創意失敗。所有 AI 提供者都無法使用，請檢查您的 API 金鑰並再試一次。');
         console.error(err);
       } finally {
         setIsGenerating(false);
