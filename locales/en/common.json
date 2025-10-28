@@ -1,0 +1,24 @@
+{
+  "navigation": {
+    "backToHome": "Back to Home",
+    "changeGroup": "Change Group",
+    "finishManaging": "Finish Managing",
+    "manageClasses": "Manage Classes"
+  },
+  "footer": {
+    "copyright": "© {{year}} Teacher Support Tools. All rights reserved."
+  },
+  "buttons": {
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "edit": "Edit",
+    "delete": "Delete",
+    "export": "Export",
+    "import": "Import",
+    "addNew": "Add New"
+  },
+  "common": {
+    "loading": "Loading...",
+    "na": "N/A"
+  }
+}
