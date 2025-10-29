@@ -1,0 +1,49 @@
+{
+  "systemTitle": "Cha Kwo Ling Baptist Church Roll Call App",
+  "recovery": {
+    "found": "Unfinished roll call record found!",
+    "recover": "Recover Record",
+    "dismiss": "Dismiss"
+  },
+  "fileList": "List: {{fileName}}",
+  "timer": {
+    "countdown": "Countdown Timer",
+    "start": "Start",
+    "pause": "Pause",
+    "reset": "Reset"
+  },
+  "stats": {
+    "attendance": "Attendance: {{present}} / {{total}}",
+    "rate": "Rate: {{rate}}%"
+  },
+  "buttons": {
+    "saveRollCall": "Save Roll Call List",
+    "reset": "Reset",
+    "add": "Add",
+    "importList": "Import List"
+  },
+  "input": {
+    "placeholder": "Enter name"
+  },
+  "messages": {
+    "addSuccess": "Member added successfully!",
+    "noMembers": "Please start adding members or import a list.",
+    "noMembersToExport": "No members to export",
+    "confirmReset": "Please make sure you have saved the file before resetting.\n\nAre you sure you want to continue?",
+    "confirmDelete": "Are you sure you want to delete {{name}}?"
+  },
+  "status": {
+    "present": "Present",
+    "notMarked": "Not Marked"
+  },
+  "tooltip": {
+    "deleteMember": "Delete Member"
+  },
+  "csvHeaders": {
+    "name": "Name",
+    "status": "Attendance Status",
+    "time": "Time",
+    "present": "Present",
+    "absent": "Absent"
+  }
+}

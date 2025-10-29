@@ -5,21 +5,25 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enCommon from '../locales/en/common.json';
 import enDashboard from '../locales/en/dashboard.json';
 import enLessonPlan from '../locales/en/lessonPlan.json';
+import enRollCall from '../locales/en/rollCall.json';
 
 import zhCommon from '../locales/zh-TW/common.json';
 import zhDashboard from '../locales/zh-TW/dashboard.json';
 import zhLessonPlan from '../locales/zh-TW/lessonPlan.json';
+import zhRollCall from '../locales/zh-TW/rollCall.json';
 
 const resources = {
   en: {
     common: enCommon,
     dashboard: enDashboard,
     lessonPlan: enLessonPlan,
+    rollCall: enRollCall,
   },
   'zh-TW': {
     common: zhCommon,
     dashboard: zhDashboard,
     lessonPlan: zhLessonPlan,
+    rollCall: zhRollCall,
   },
 };
 

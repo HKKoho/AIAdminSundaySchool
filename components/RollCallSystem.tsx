@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Card from './common/Card';
 import Button from './common/Button';
 import { Alert, AlertDescription } from './common/Alert';
@@ -20,7 +21,7 @@ interface AttendanceState {
 const STORAGE_KEY = 'rollCallSystemTemp';
 
 const RollCallSystem: React.FC = () => {
-  const systemTitle = "茶果嶺浸信會點名應用程序";
+  const { t } = useTranslation('rollCall');
 
   // Initialize state variables
   const [members, setMembers] = useState<Member[]>([]);
@@ -109,8 +110,7 @@ const RollCallSystem: React.FC = () => {
 
   // Enhanced reset function
   const handleReset = () => {
-    const confirmMessage = "請確保您已儲存檔案後再重置。\n\n您確定要繼續重置嗎？";
-    if (window.confirm(confirmMessage)) {
+    if (window.confirm(t('messages.confirmReset'))) {
       setMembers([]);
       setAttendance({});
       setNewName('');
@@ -177,8 +177,7 @@ const RollCallSystem: React.FC = () => {
 
   // Delete member
   const handleDelete = (memberId: string, memberName: string) => {
-    const confirmMessage = `確定要刪除 ${memberName} 嗎？`;
-    if (window.confirm(confirmMessage)) {
+    if (window.confirm(t('messages.confirmDelete', { name: memberName }))) {
       setMembers(prevMembers => prevMembers.filter(member => member.id !== memberId));
       setAttendance(prev => {
         const newAttendance = { ...prev };
@@ -191,15 +190,15 @@ const RollCallSystem: React.FC = () => {
   // Export handler
   const handleExport = () => {
     if (members.length === 0) {
-      alert('沒有成員可匯出');
+      alert(t('messages.noMembersToExport'));
       return;
     }
     const date = new Date().toLocaleDateString().replace(/\//g, '-');
-    const headers = ['姓名', '出席狀態', '時間'];
+    const headers = [t('csvHeaders.name'), t('csvHeaders.status'), t('csvHeaders.time')];
 
     const rows = members.map(member => [
       member.name,
-      attendance[member.id]?.present ? '出席' : '缺席',
+      attendance[member.id]?.present ? t('csvHeaders.present') : t('csvHeaders.absent'),
       attendance[member.id]?.timestamp || ''
     ]);
 
@@ -212,7 +211,7 @@ const RollCallSystem: React.FC = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${systemTitle}_${date}.csv`;
+    a.download = `${t('systemTitle')}_${date}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -226,14 +225,14 @@ const RollCallSystem: React.FC = () => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
-              <span className="font-medium">發現未完成的點名記錄！</span>
+              <span className="font-medium">{t('recovery.found')}</span>
             </div>
             <div className="flex gap-2">
               <Button variant="secondary" onClick={handleRecover}>
-                恢復記錄
+                {t('recovery.recover')}
               </Button>
               <Button variant="ghost" onClick={handleDismissRecovery}>
-                忽略
+                {t('recovery.dismiss')}
               </Button>
             </div>
           </AlertDescription>
@@ -241,10 +240,10 @@ const RollCallSystem: React.FC = () => {
       )}
 
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-center mb-2 text-brand-dark">{systemTitle}</h1>
+        <h1 className="text-3xl font-bold text-center mb-2 text-brand-dark">{t('systemTitle')}</h1>
         {currentFileName && (
           <h2 className="text-lg text-gray-600 text-center mb-4">
-            名單: {currentFileName}
+            {t('fileList', { fileName: currentFileName })}
           </h2>
         )}
 
@@ -255,7 +254,7 @@ const RollCallSystem: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="text-center">
-                <p className="text-yellow-600 font-medium">倒數時間</p>
+                <p className="text-yellow-600 font-medium">{t('timer.countdown')}</p>
                 <p className="text-xl font-bold text-yellow-700">{formatTime(countdown)}</p>
               </div>
             </div>
@@ -265,21 +264,21 @@ const RollCallSystem: React.FC = () => {
                   onClick={startTimer}
                   className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
                 >
-                  開始
+                  {t('timer.start')}
                 </button>
               ) : (
                 <button
                   onClick={pauseTimer}
                   className="px-2 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600"
                 >
-                  暫停
+                  {t('timer.pause')}
                 </button>
               )}
               <button
                 onClick={resetTimer}
                 className="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
               >
-                重設
+                {t('timer.reset')}
               </button>
             </div>
           </Card>
@@ -294,10 +293,10 @@ const RollCallSystem: React.FC = () => {
                 </svg>
                 <div className="text-center">
                   <p className="text-blue-600 font-medium">
-                    出席人數: {getAttendanceStats().presentMembers} / {getAttendanceStats().totalMembers}
+                    {t('stats.attendance', { present: getAttendanceStats().presentMembers, total: getAttendanceStats().totalMembers })}
                   </p>
                   <p className="text-xs text-blue-500">
-                    出席率: {((getAttendanceStats().presentMembers / getAttendanceStats().totalMembers) * 100 || 0).toFixed(1)}%
+                    {t('stats.rate', { rate: ((getAttendanceStats().presentMembers / getAttendanceStats().totalMembers) * 100 || 0).toFixed(1) })}
                   </p>
                 </div>
               </div>
@@ -314,7 +313,7 @@ const RollCallSystem: React.FC = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            儲存點名名單
+            {t('buttons.saveRollCall')}
           </Button>
           <Button
             variant="danger"
@@ -325,7 +324,7 @@ const RollCallSystem: React.FC = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            重置
+            {t('buttons.reset')}
           </Button>
         </div>
       </div>
@@ -335,10 +334,10 @@ const RollCallSystem: React.FC = () => {
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="輸入姓名"
+          placeholder={t('input.placeholder')}
           className="flex-1 min-w-[200px] p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-primary focus:border-brand-primary"
         />
-        <Button type="submit">新增</Button>
+        <Button type="submit">{t('buttons.add')}</Button>
         <Button
           type="button"
           variant="secondary"
@@ -348,7 +347,7 @@ const RollCallSystem: React.FC = () => {
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
-          匯入名單
+          {t('buttons.importList')}
         </Button>
         <input
           id="file-upload"
@@ -361,7 +360,7 @@ const RollCallSystem: React.FC = () => {
 
       {showAddSuccess && (
         <div className="text-green-600 text-center mb-2 font-medium">
-          成功新增成員！
+          {t('messages.addSuccess')}
         </div>
       )}
 
@@ -371,7 +370,7 @@ const RollCallSystem: React.FC = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           <p className="text-gray-600 mt-4">
-            請開始新增成員或匯入名單。
+            {t('messages.noMembers')}
           </p>
         </div>
       ) : (
@@ -388,7 +387,7 @@ const RollCallSystem: React.FC = () => {
                 }}
                 className="absolute top-1 right-1 opacity-0 group-hover:opacity-100
                   transition-opacity p-1 hover:bg-red-100 rounded-full"
-                title="刪除成員"
+                title={t('tooltip.deleteMember')}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -405,7 +404,7 @@ const RollCallSystem: React.FC = () => {
                 <div className="text-center">
                   <h3 className="font-medium text-sm mb-1">{member.name}</h3>
                   <p className="text-xs text-gray-600">
-                    {attendance[member.id]?.present ? '已到' : '未點名'}
+                    {attendance[member.id]?.present ? t('status.present') : t('status.notMarked')}
                   </p>
                 </div>
               </div>
