@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ClassGroup } from '../types';
 import Card from './common/Card';
 
@@ -17,10 +18,12 @@ const icons: Record<ClassGroup, React.ReactNode> = {
 };
 
 const ClassGroupSelector: React.FC<ClassGroupSelectorProps> = ({ classGroups, onSelect }) => {
+  const { t } = useTranslation('dashboard');
+
   return (
     <div className="text-center">
-      <h2 className="text-3xl font-extrabold text-brand-dark mb-4">老師，歡迎您！</h2>
-      <p className="text-lg text-gray-600 mb-12">請選擇您的班級群組以開始。</p>
+      <h2 className="text-3xl font-extrabold text-brand-dark mb-4">{t('classGroupSelector.welcome')}</h2>
+      <p className="text-lg text-gray-600 mb-12">{t('classGroupSelector.selectGroup')}</p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {classGroups.map(({ group, description }) => (
           <Card key={group} onClick={() => onSelect(group)} className="text-center group">

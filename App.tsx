@@ -122,13 +122,13 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
     const handleAddNew = () => {
         setEditingClass({
             id: `class-${Date.now()}`,
-            time: '主日 10:00 AM',
+            time: i18n.language === 'en' ? 'Sunday 10:00 AM' : '主日 10:00 AM',
             beginningDate: '',
-            duration: '1 小時',
+            duration: i18n.language === 'en' ? '1 Hour' : '1 小時',
             place: '',
             teacher: '',
             focusLevel: '',
-            group: '新課程',
+            group: i18n.language === 'en' ? 'New Course' : '新課程',
         });
         setIsModalOpen(true);
     };
@@ -252,7 +252,7 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
 
                 {error && !useMongoDB && (
                     <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
-                        <p className="font-medium">ℹ️ 資訊</p>
+                        <p className="font-medium">{t('dashboard:info.title')}</p>
                         <p>{error}</p>
                         <p className="text-sm mt-2">{t('classArrangement.mongoInfo')}</p>
                     </div>
@@ -307,7 +307,7 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
                 />
             )}
             <footer className="text-center p-4 text-gray-500 text-sm">
-                <p>&copy; {new Date().getFullYear()} 教師支援工具。版權所有。</p>
+                <p>{t('common:footer.copyright', { year: new Date().getFullYear() })}</p>
             </footer>
         </div>
     );

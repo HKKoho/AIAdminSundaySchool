@@ -63,5 +63,12 @@
     "lessons": "堂課",
     "lastUpdated": "最後更新",
     "confirmDelete": "您確定要刪除此計畫嗎？此操作無法復原。"
+  },
+  "classGroupSelector": {
+    "welcome": "老師，歡迎您！",
+    "selectGroup": "請選擇您的班級群組以開始。"
+  },
+  "info": {
+    "title": "ℹ️ 資訊"
   }
 }
