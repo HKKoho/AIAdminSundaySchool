@@ -83,10 +83,11 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const language = i18n.language === 'zh-TW' || i18n.language === 'zh' ? 'zh-TW' : 'en';
         const [eventsData, tasksData, membersData] = await Promise.all([
-          eventService.getEvents(),
-          eventService.getTasks(),
-          memberService.getMembers(),
+          eventService.getEvents(language),
+          eventService.getTasks(language),
+          memberService.getMembers(language),
         ]);
 
         setEvents(eventsData);
@@ -103,7 +104,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
     };
 
     fetchData();
-  }, []);
+  }, [i18n.language]);
 
   const generateSchedule = async (allEvents: ChurchEvent[]) => {
     setIsGeneratingSchedule(true);
