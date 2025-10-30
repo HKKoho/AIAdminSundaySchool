@@ -6,11 +6,13 @@ import enCommon from '../locales/en/common.json';
 import enDashboard from '../locales/en/dashboard.json';
 import enLessonPlan from '../locales/en/lessonPlan.json';
 import enRollCall from '../locales/en/rollCall.json';
+import enSecretary from '../locales/en/secretary.json';
 
 import zhCommon from '../locales/zh-TW/common.json';
 import zhDashboard from '../locales/zh-TW/dashboard.json';
 import zhLessonPlan from '../locales/zh-TW/lessonPlan.json';
 import zhRollCall from '../locales/zh-TW/rollCall.json';
+import zhSecretary from '../locales/zh-TW/secretary.json';
 
 const resources = {
   en: {
@@ -18,12 +20,14 @@ const resources = {
     dashboard: enDashboard,
     lessonPlan: enLessonPlan,
     rollCall: enRollCall,
+    secretary: enSecretary,
   },
   'zh-TW': {
     common: zhCommon,
     dashboard: zhDashboard,
     lessonPlan: zhLessonPlan,
     rollCall: zhRollCall,
+    secretary: zhSecretary,
   },
 };
 

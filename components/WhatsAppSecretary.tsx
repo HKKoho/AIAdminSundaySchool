@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 import { geminiService } from '../services/geminiService';
 import { eventService } from '../services/eventService';
 import { memberService } from '../services/memberService';
@@ -40,7 +41,7 @@ async function decodeAudioData(
 }
 
 const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
-  const { t, i18n } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('secretary');
   const [events, setEvents] = useState<ChurchEvent[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
@@ -114,12 +115,12 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
       const tomorrowStr = tomorrow.toISOString().split('T')[0];
       const relevantEvents = allEvents.filter(e => e.date === todayStr || e.date === tomorrowStr);
 
-      const language = i18n.language === 'zh' ? 'zh-TW' : 'en';
+      const language = i18n.language === 'zh-TW' || i18n.language === 'zh' ? 'zh-TW' : 'en';
       const scheduleText = await geminiService.generateDailySchedule(relevantEvents, language);
       setSchedule(scheduleText);
     } catch (error) {
       console.error("Failed to generate schedule:", error);
-      setSchedule('Error generating schedule');
+      setSchedule(t('common.error'));
     } finally {
       setIsGeneratingSchedule(false);
     }
@@ -136,12 +137,12 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
     setReport('');
     stopPlayback();
     try {
-      const language = i18n.language === 'zh' ? 'zh-TW' : 'en';
+      const language = i18n.language === 'zh-TW' || i18n.language === 'zh' ? 'zh-TW' : 'en';
       const generatedReport = await geminiService.generateMonthlyReport(events, tasks, language);
       setReport(generatedReport);
     } catch (error) {
       console.error("Failed to generate report:", error);
-      setReport('Error generating report');
+      setReport(t('common.error'));
     } finally {
       setIsGeneratingReport(false);
     }
@@ -188,12 +189,12 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
     setIsProcessingPastoral(true);
     setPastoralResponse('');
     try {
-      const language = i18n.language === 'zh' ? 'zh-TW' : 'en';
+      const language = i18n.language === 'zh-TW' || i18n.language === 'zh' ? 'zh-TW' : 'en';
       const response = await geminiService.pastoralAgentRouter(pastoralPrompt, members, language);
       setPastoralResponse(response);
     } catch (error) {
       console.error("Failed to process pastoral request:", error);
-      setPastoralResponse('Error processing request');
+      setPastoralResponse(t('common.error'));
     } finally {
       setIsProcessingPastoral(false);
     }
@@ -206,7 +207,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
     setIsProcessingEvent(true);
     setEventResponse('');
     try {
-      const language = i18n.language === 'zh' ? 'zh-TW' : 'en';
+      const language = i18n.language === 'zh-TW' || i18n.language === 'zh' ? 'zh-TW' : 'en';
       const response = await geminiService.eventAgentRouter(eventPrompt, language);
 
       if (response.type === 'event_details') {
@@ -216,7 +217,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
       }
     } catch (error) {
       console.error("Failed to process event request:", error);
-      setEventResponse('Error processing request');
+      setEventResponse(t('common.error'));
     } finally {
       setIsProcessingEvent(false);
     }
@@ -227,17 +228,17 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* AI Monthly Report Generator */}
         <div className="bg-white p-6 rounded-xl shadow-md flex flex-col">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">AI Monthly Report Generator</h2>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">{t('dashboard.monthlyReport.title')}</h2>
           <div className="flex-grow">
             {!report && !isGeneratingReport && (
               <button
                 onClick={handleGenerateReport}
                 className="flex items-center bg-purple-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-purple-700 transition-colors"
               >
-                ✨ Generate Monthly Report
+                ✨ {t('dashboard.monthlyReport.generateButton')}
               </button>
             )}
-            {isGeneratingReport && <p className="text-gray-500 animate-pulse">Generating report...</p>}
+            {isGeneratingReport && <p className="text-gray-500 animate-pulse">{t('dashboard.monthlyReport.generating')}</p>}
             {report && (
               <div className="space-y-4">
                 <div className="prose prose-blue max-w-none text-gray-600 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: report.replace(/\n/g, '<br/>') }} />
@@ -251,7 +252,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
                   onClick={stopPlayback}
                   className="flex items-center bg-red-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-600 transition-colors"
                 >
-                  🛑 Stop
+                  🛑 {t('dashboard.monthlyReport.stop')}
                 </button>
               ) : (
                 <button
@@ -259,7 +260,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
                   disabled={isGeneratingSpeech}
                   className="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-300"
                 >
-                  {isGeneratingSpeech ? '⏳ Loading...' : '🔊 Read Aloud'}
+                  {isGeneratingSpeech ? `⏳ ${t('dashboard.monthlyReport.loadingAudio')}` : `🔊 ${t('dashboard.monthlyReport.readAloud')}`}
                 </button>
               )}
             </div>
@@ -268,8 +269,8 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
 
         {/* Today & Tomorrow's Schedule */}
         <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Daily Schedule</h2>
-          {isGeneratingSchedule && <p className="text-gray-500 animate-pulse">Generating schedule...</p>}
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">{t('dashboard.dailySchedule.title')}</h2>
+          {isGeneratingSchedule && <p className="text-gray-500 animate-pulse">{t('dashboard.dailySchedule.generating')}</p>}
           {schedule && (
             <div className="prose prose-blue max-w-none text-gray-600 whitespace-pre-wrap">
               {schedule}
@@ -281,37 +282,45 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
       {/* Upcoming Events & Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Upcoming Events</h2>
-          <div className="space-y-4">
-            {events.slice(0, 3).map(event => (
-              <div key={event.id} className="bg-white p-4 rounded-lg shadow">
-                <h3 className="text-lg font-bold text-gray-800">{event.title}</h3>
-                <p className="text-sm text-gray-600">{new Date(event.date).toLocaleDateString()} at {event.time}</p>
-                <p className="text-sm text-gray-600">{event.location}</p>
-                <p className="text-gray-700 mt-2">{event.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Todo List</h2>
-          <div className="bg-white p-4 rounded-xl shadow-md">
-            <div className="space-y-3">
-              {tasks.map(task => (
-                <div key={task.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    readOnly
-                    className="w-4 h-4"
-                  />
-                  <span className={task.completed ? 'line-through text-gray-500' : 'text-gray-800'}>
-                    {task.text}
-                  </span>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">{t('dashboard.upcomingEvents.title')}</h2>
+          {events.length === 0 ? (
+            <p className="text-gray-500">{t('dashboard.upcomingEvents.noEvents')}</p>
+          ) : (
+            <div className="space-y-4">
+              {events.slice(0, 3).map(event => (
+                <div key={event.id} className="bg-white p-4 rounded-lg shadow">
+                  <h3 className="text-lg font-bold text-gray-800">{event.title}</h3>
+                  <p className="text-sm text-gray-600">{new Date(event.date).toLocaleDateString(i18n.language)} {t('dashboard.upcomingEvents.at')} {event.time}</p>
+                  <p className="text-sm text-gray-600">{event.location}</p>
+                  <p className="text-gray-700 mt-2">{event.description}</p>
                 </div>
               ))}
             </div>
+          )}
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">{t('dashboard.todoList.title')}</h2>
+          <div className="bg-white p-4 rounded-xl shadow-md">
+            {tasks.length === 0 ? (
+              <p className="text-gray-500">{t('dashboard.todoList.noTasks')}</p>
+            ) : (
+              <div className="space-y-3">
+                {tasks.map(task => (
+                  <div key={task.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={task.completed}
+                      readOnly
+                      className="w-4 h-4"
+                    />
+                    <span className={task.completed ? 'line-through text-gray-500' : 'text-gray-800'}>
+                      {task.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -321,15 +330,15 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
   const renderPastoralAgent = () => (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">Pastoral Care AI Agent</h2>
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4">{t('pastoral.title')}</h2>
         <p className="text-gray-600 mb-4">
-          Ask me to draft emails, create social media posts, or help with pastoral care tasks.
+          {t('pastoral.description')}
         </p>
         <form onSubmit={handlePastoralSubmit}>
           <textarea
             value={pastoralPrompt}
             onChange={(e) => setPastoralPrompt(e.target.value)}
-            placeholder="Example: Draft an encouraging email to John who is recovering from illness"
+            placeholder={t('pastoral.placeholder')}
             className="w-full h-32 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
           <button
@@ -337,13 +346,13 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
             disabled={isProcessingPastoral || !pastoralPrompt.trim()}
             className="mt-4 bg-purple-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-purple-700 transition-colors disabled:bg-gray-400"
           >
-            {isProcessingPastoral ? 'Processing...' : 'Submit'}
+            {isProcessingPastoral ? t('pastoral.processing') : t('pastoral.submitButton')}
           </button>
         </form>
 
         {pastoralResponse && (
           <div className="mt-6 p-4 bg-gray-50 rounded-md">
-            <h3 className="font-semibold text-gray-700 mb-2">Response:</h3>
+            <h3 className="font-semibold text-gray-700 mb-2">{t('pastoral.responseLabel')}</h3>
             <div className="whitespace-pre-wrap text-gray-800">{pastoralResponse}</div>
           </div>
         )}
@@ -354,15 +363,15 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
   const renderEventAgent = () => (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">Event Planning AI Agent</h2>
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4">{t('events.title')}</h2>
         <p className="text-gray-600 mb-4">
-          Ask me to help plan events, suggest activities, or create checklists.
+          {t('events.description')}
         </p>
         <form onSubmit={handleEventSubmit}>
           <textarea
             value={eventPrompt}
             onChange={(e) => setEventPrompt(e.target.value)}
-            placeholder="Example: Plan a youth group meeting next Friday at 7 PM in the fellowship hall"
+            placeholder={t('events.placeholder')}
             className="w-full h-32 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
           <button
@@ -370,13 +379,13 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
             disabled={isProcessingEvent || !eventPrompt.trim()}
             className="mt-4 bg-purple-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-purple-700 transition-colors disabled:bg-gray-400"
           >
-            {isProcessingEvent ? 'Processing...' : 'Submit'}
+            {isProcessingEvent ? t('events.processing') : t('events.submitButton')}
           </button>
         </form>
 
         {eventResponse && (
           <div className="mt-6 p-4 bg-gray-50 rounded-md">
-            <h3 className="font-semibold text-gray-700 mb-2">Response:</h3>
+            <h3 className="font-semibold text-gray-700 mb-2">{t('events.responseLabel')}</h3>
             <div className="whitespace-pre-wrap text-gray-800">{eventResponse}</div>
           </div>
         )}
@@ -389,7 +398,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
-          <p className="mt-4 text-gray-500">Loading...</p>
+          <p className="mt-4 text-gray-500">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -405,13 +414,16 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
             <div>
-              <h1 className="text-2xl font-bold">WhatsApp AI Secretary</h1>
-              <p className="text-xs text-purple-100 opacity-80 -mt-1">Your Church Management Assistant</p>
+              <h1 className="text-2xl font-bold">{t('header.title')}</h1>
+              <p className="text-xs text-purple-100 opacity-80 -mt-1">{t('header.subtitle')}</p>
             </div>
           </div>
-          <button onClick={onBack} className="text-sm hover:underline">
-            {t('common:navigation.backToHome')}
-          </button>
+          <div className="flex items-center space-x-4">
+            <LanguageSwitcher />
+            <button onClick={onBack} className="text-sm hover:underline">
+              {t('header.backToHome')}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -427,7 +439,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              Dashboard
+              {t('tabs.dashboard')}
             </button>
             <button
               onClick={() => setActiveTab('pastoral')}
@@ -437,7 +449,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              Pastoral Care
+              {t('tabs.pastoral')}
             </button>
             <button
               onClick={() => setActiveTab('events')}
@@ -447,7 +459,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              Event Planning
+              {t('tabs.events')}
             </button>
           </div>
         </div>
@@ -462,7 +474,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
 
       {/* Footer */}
       <footer className="text-center p-4 text-gray-500 text-sm">
-        <p>{t('common:footer.copyright', { year: new Date().getFullYear() })}</p>
+        <p>{t('common.copyright', { year: new Date().getFullYear() })}</p>
       </footer>
     </div>
   );
