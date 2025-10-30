@@ -1,0 +1,26 @@
+{
+  "navigation": {
+    "backToHome": "返回首頁",
+    "changeGroup": "更換群組",
+    "finishManaging": "完成管理",
+    "manageClasses": "管理課程",
+    "backToLanding": "返回首頁"
+  },
+  "footer": {
+    "copyright": "© {{year}} 教師支援工具。版權所有。"
+  },
+  "buttons": {
+    "cancel": "取消",
+    "save": "儲存變更",
+    "edit": "編輯",
+    "delete": "刪除",
+    "export": "匯出",
+    "import": "匯入",
+    "addNew": "新增"
+  },
+  "common": {
+    "loading": "載入中...",
+    "na": "N/A",
+    "comingSoon": "即將推出！"
+  }
+}

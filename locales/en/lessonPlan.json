@@ -1,0 +1,26 @@
+{
+  "builder": {
+    "backToDashboard": "Back to Dashboard",
+    "savePlan": "Save Plan",
+    "lessons": "Lessons (1-12)",
+    "lessonPrefix": "Lesson",
+    "unnamed": "Untitled",
+    "editingLesson": "Editing Lesson",
+    "newPlanTitle": "New Quarterly Plan for {{group}}",
+    "fields": {
+      "lessonTitle": "Lesson Title",
+      "topic": "Topic/Theme",
+      "scripture": "Primary Scripture",
+      "activities": "Activities/Discussion Points",
+      "notes": "Teacher Notes"
+    },
+    "aiTutor": {
+      "title": "Your AI Tutor",
+      "thinking": "Thinking...",
+      "askForIdeas": "Ask {{name}} for Ideas",
+      "suggestionsFrom": "Suggestions from {{name}}:",
+      "errorNoTopic": "Please provide a lesson topic first.",
+      "errorGeneration": "Failed to generate ideas. All AI providers are unavailable, please check your API keys and try again."
+    }
+  }
+}

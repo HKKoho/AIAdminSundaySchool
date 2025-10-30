@@ -1,0 +1,7 @@
+{
+  "name": "AI Church Secretary Assistant",
+  "description": "A prototype for an AI-powered assistant to help manage church events, member directory, and tasks for pastors, using Gemini for intelligent summaries.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

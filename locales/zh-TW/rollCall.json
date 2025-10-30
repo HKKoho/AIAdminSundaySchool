@@ -1,0 +1,49 @@
+{
+  "systemTitle": "茶果嶺浸信會點名應用程序",
+  "recovery": {
+    "found": "發現未完成的點名記錄！",
+    "recover": "恢復記錄",
+    "dismiss": "忽略"
+  },
+  "fileList": "名單: {{fileName}}",
+  "timer": {
+    "countdown": "倒數時間",
+    "start": "開始",
+    "pause": "暫停",
+    "reset": "重設"
+  },
+  "stats": {
+    "attendance": "出席人數: {{present}} / {{total}}",
+    "rate": "出席率: {{rate}}%"
+  },
+  "buttons": {
+    "saveRollCall": "儲存點名名單",
+    "reset": "重置",
+    "add": "新增",
+    "importList": "匯入名單"
+  },
+  "input": {
+    "placeholder": "輸入姓名"
+  },
+  "messages": {
+    "addSuccess": "成功新增成員！",
+    "noMembers": "請開始新增成員或匯入名單。",
+    "noMembersToExport": "沒有成員可匯出",
+    "confirmReset": "請確保您已儲存檔案後再重置。\n\n您確定要繼續重置嗎？",
+    "confirmDelete": "確定要刪除 {{name}} 嗎？"
+  },
+  "status": {
+    "present": "已到",
+    "notMarked": "未點名"
+  },
+  "tooltip": {
+    "deleteMember": "刪除成員"
+  },
+  "csvHeaders": {
+    "name": "姓名",
+    "status": "出席狀態",
+    "time": "時間",
+    "present": "出席",
+    "absent": "缺席"
+  }
+}

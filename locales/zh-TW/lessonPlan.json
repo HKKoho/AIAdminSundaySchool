@@ -1,0 +1,27 @@
+{
+  "builder": {
+    "backToDashboard": "返回儀表板",
+    "savePlan": "儲存計畫",
+    "lessons": "課程 (1-12)",
+    "lessonPrefix": "第",
+    "lessonSuffix": "課",
+    "unnamed": "未命名",
+    "editingLesson": "正在編輯課程",
+    "newPlanTitle": "為 {{group}} 設計的新季度計畫",
+    "fields": {
+      "lessonTitle": "課程標題",
+      "topic": "主題/主旨",
+      "scripture": "主要經文",
+      "activities": "活動/討論點",
+      "notes": "教師筆記"
+    },
+    "aiTutor": {
+      "title": "您的 AI 導師",
+      "thinking": "思考中...",
+      "askForIdeas": "向 {{name}} 尋求創意",
+      "suggestionsFrom": "來自 {{name}} 的建議：",
+      "errorNoTopic": "請先提供課程主題。",
+      "errorGeneration": "生成創意失敗。所有 AI 提供者都無法使用，請檢查您的 API 金鑰並再試一次。"
+    }
+  }
+}
