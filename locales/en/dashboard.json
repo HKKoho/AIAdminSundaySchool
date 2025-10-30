@@ -1,7 +1,7 @@
 {
   "landing": {
-    "title": "Sunday School Center",
-    "subtitle": "Your all-in-one resource for teaching and organization.",
+    "title": "Church Administration Assistant",
+    "subtitle": "Your all-in-one resource for better administration.",
     "classes": {
       "title": "Classes",
       "description": "View and manage quarterly class schedules and arrangements."
@@ -13,6 +13,18 @@
     "rollCall": {
       "title": "Roll Call",
       "description": "Manage student attendance and roll call records."
+    },
+    "whatsappSecretary": {
+      "title": "WhatsApp Secretary",
+      "description": "Automated message management and communication assistant."
+    },
+    "aiBookkeeper": {
+      "title": "AI Bookkeeper",
+      "description": "Smart financial tracking and church budget management."
+    },
+    "aiEventOrganizer": {
+      "title": "AI Event Organizer",
+      "description": "Plan and coordinate church events with AI assistance."
     }
   },
   "classArrangement": {
