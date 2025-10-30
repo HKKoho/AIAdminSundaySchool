@@ -3,7 +3,8 @@
     "backToHome": "返回首頁",
     "changeGroup": "更換群組",
     "finishManaging": "完成管理",
-    "manageClasses": "管理課程"
+    "manageClasses": "管理課程",
+    "backToLanding": "返回首頁"
   },
   "footer": {
     "copyright": "© {{year}} 教師支援工具。版權所有。"
@@ -19,6 +20,7 @@
   },
   "common": {
     "loading": "載入中...",
-    "na": "N/A"
+    "na": "N/A",
+    "comingSoon": "即將推出！"
   }
 }

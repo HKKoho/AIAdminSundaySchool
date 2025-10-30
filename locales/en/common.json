@@ -3,7 +3,8 @@
     "backToHome": "Back to Home",
     "changeGroup": "Change Group",
     "finishManaging": "Finish Managing",
-    "manageClasses": "Manage Classes"
+    "manageClasses": "Manage Classes",
+    "backToLanding": "Back to Home"
   },
   "footer": {
     "copyright": "© {{year}} Teacher Support Tools. All rights reserved."
@@ -19,6 +20,7 @@
   },
   "common": {
     "loading": "Loading...",
-    "na": "N/A"
+    "na": "N/A",
+    "comingSoon": "Coming Soon!"
   }
 }

@@ -362,14 +362,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-brand-light p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="text-center mb-12">
-        <div className="flex items-center justify-center mb-4">
-          <h1 className="text-5xl font-extrabold text-brand-dark">{t('landing.title')}</h1>
-          <div className="ml-4">
-            <LanguageSwitcher />
-          </div>
-        </div>
-        <p className="text-xl text-gray-600 mt-4">{t('landing.subtitle')}</p>
+        <h1 className="text-5xl font-extrabold text-brand-dark mb-4">{t('landing.title')}</h1>
+        <p className="text-xl text-gray-600">{t('landing.subtitle')}</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl w-full">
         <Card onClick={() => onSelectView('classes')} className="group text-center">
@@ -399,7 +397,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
                 <p className="text-gray-600 mt-2">{t('landing.rollCall.description')}</p>
             </div>
         </Card>
-        <Card onClick={() => alert(t('landing.whatsappSecretary.title') + ' - Coming Soon!')} className="group text-center">
+        <Card onClick={() => alert(t('landing.whatsappSecretary.title') + ' - ' + t('common:common.comingSoon'))} className="group text-center">
             <div className="p-6 bg-purple-600 group-hover:bg-purple-700 transition-colors duration-300 flex justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
             </div>
@@ -408,7 +406,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
                 <p className="text-gray-600 mt-2">{t('landing.whatsappSecretary.description')}</p>
             </div>
         </Card>
-        <Card onClick={() => alert(t('landing.aiBookkeeper.title') + ' - Coming Soon!')} className="group text-center">
+        <Card onClick={() => alert(t('landing.aiBookkeeper.title') + ' - ' + t('common:common.comingSoon'))} className="group text-center">
             <div className="p-6 bg-blue-600 group-hover:bg-blue-700 transition-colors duration-300 flex justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
@@ -417,7 +415,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
                 <p className="text-gray-600 mt-2">{t('landing.aiBookkeeper.description')}</p>
             </div>
         </Card>
-        <Card onClick={() => alert(t('landing.aiEventOrganizer.title') + ' - Coming Soon!')} className="group text-center">
+        <Card onClick={() => alert(t('landing.aiEventOrganizer.title') + ' - ' + t('common:common.comingSoon'))} className="group text-center">
             <div className="p-6 bg-pink-600 group-hover:bg-pink-700 transition-colors duration-300 flex justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
             </div>
@@ -439,7 +437,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
 
 type SupportView = 'selector' | 'dashboard' | 'builder';
 
-const SupportApp: React.FC = () => {
+interface SupportAppProps {
+  onBack: () => void;
+}
+
+const SupportApp: React.FC<SupportAppProps> = ({ onBack }) => {
   const { t } = useTranslation('dashboard');
   const [selectedGroup, setSelectedGroup] = useLocalStorage<ClassGroup | null>('selectedClassGroup', null);
   const [view, setView] = useState<SupportView>('selector');
@@ -490,6 +492,12 @@ const SupportApp: React.FC = () => {
             <LanguageSwitcher />
             <span className="hidden sm:block bg-brand-accent text-brand-dark px-3 py-1 rounded-full text-sm font-semibold">{selectedGroup}</span>
             <button onClick={handleResetGroup} className="text-sm hover:underline">{t('common:navigation.changeGroup')}</button>
+            <button onClick={onBack} className="text-sm hover:underline">{t('common:navigation.backToHome')}</button>
+          </div>
+        )}
+        {!selectedGroup && (
+          <div className="flex items-center space-x-4">
+            <LanguageSwitcher />
           </div>
         )}
       </div>
@@ -535,7 +543,7 @@ const App: React.FC = () => {
       case 'classes':
         return <ClassArrangement onBack={() => setView('landing')} />;
       case 'support':
-        return <SupportApp />;
+        return <SupportApp onBack={() => setView('landing')} />;
       case 'rollcall':
         return <RollCall onBack={() => setView('landing')} />;
       case 'landing':
