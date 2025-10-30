@@ -7,12 +7,11 @@ interface CardProps {
 }
 
 const Card: React.FC<CardProps> = ({ children, className = '', onClick }) => {
-  const baseClasses = 'bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200';
-  const hoverClasses = onClick ? 'cursor-pointer hover:shadow-xl hover:scale-105' : '';
-  const combinedClasses = `${baseClasses} ${hoverClasses} ${className}`;
+  const baseClasses = 'bg-white rounded-lg shadow-md overflow-hidden';
+  const interactiveClasses = onClick ? 'transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer' : '';
 
   return (
-    <div className={combinedClasses} onClick={onClick}>
+    <div className={`${baseClasses} ${interactiveClasses} ${className}`} onClick={onClick}>
       {children}
     </div>
   );
