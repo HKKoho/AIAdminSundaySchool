@@ -421,7 +421,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
           </div>
           <div className="flex items-center space-x-4">
             <a
-              href="https://chriatainityplatform.vercel.app"
+              href="https://christainityplatform.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-1 px-3 py-1 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md text-sm font-medium transition-colors duration-200"
