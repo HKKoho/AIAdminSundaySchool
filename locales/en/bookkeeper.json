@@ -1,0 +1,50 @@
+{
+  "header": {
+    "title": "AI Bookkeeper",
+    "subtitle": "Automated document classification and bookkeeping",
+    "backToHome": "Back to Home"
+  },
+  "connection": {
+    "title": "WhatsApp Connection",
+    "subtitle": "Connect your WhatsApp to receive and process documents",
+    "status": {
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "connecting": "Connecting",
+      "qr_ready": "Scan QR Code"
+    },
+    "connecting": "Connecting to WhatsApp server...",
+    "connectedMessage": "WhatsApp is connected and ready to receive documents",
+    "scanQR": "Scan QR Code with WhatsApp",
+    "qrInstructions": "Open WhatsApp on your phone → Settings → Linked Devices → Link a Device → Scan this QR code"
+  },
+  "errors": {
+    "serverNotRunning": "Server not running or unreachable",
+    "startServer": "Start the server with"
+  },
+  "stats": {
+    "totalDocuments": "Total Documents",
+    "classified": "Classified",
+    "pending": "Pending"
+  },
+  "documents": {
+    "title": "Recent Documents",
+    "noDocuments": "No documents received yet",
+    "vendor": "Vendor",
+    "amount": "Amount",
+    "status": {
+      "pending": "Pending",
+      "classified": "Classified",
+      "rejected": "Rejected"
+    }
+  },
+  "instructions": {
+    "title": "How to Use",
+    "step1": "Connect your WhatsApp account by scanning the QR code",
+    "step2": "Send or forward receipts, invoices, and financial documents to your WhatsApp",
+    "step3": "AI will automatically classify and extract data from your documents"
+  },
+  "common": {
+    "copyright": "© {{year}} Church Admin System. All rights reserved."
+  }
+}

@@ -9,6 +9,7 @@ import LessonPlanBuilder from './components/LessonPlanBuilder';
 import RollCallSystem from './components/RollCallSystem';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import WhatsAppSecretary from './components/WhatsAppSecretary';
+import WhatsAppBookkeeper from './components/WhatsAppBookkeeper';
 import DocumentHub from './components/DocumentHub';
 import SignInPage from './components/SignInPage';
 import Sidebar, { ViewType } from './components/Sidebar';
@@ -462,7 +463,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
                 <p className="text-gray-600 mt-2">{t('landing.whatsappSecretary.description')}</p>
             </div>
         </Card>
-        <Card onClick={() => alert(t('landing.aiBookkeeper.title') + ' - ' + t('common:common.comingSoon'))} className="group text-center">
+        <Card onClick={() => onSelectView('bookkeeper')} className="group text-center">
             <div className="p-6 bg-blue-600 group-hover:bg-blue-700 transition-colors duration-300 flex justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
@@ -626,6 +627,8 @@ const App: React.FC = () => {
         return <RollCall onBack={() => {}} hideHeader={true} />;
       case 'whatsapp':
         return <WhatsAppSecretary onBack={() => {}} hideHeader={true} />;
+      case 'bookkeeper':
+        return <WhatsAppBookkeeper onBack={() => {}} hideHeader={true} />;
       case 'documenthub':
         return <DocumentHub onBack={() => {}} hideHeader={true} />;
       case 'home':

@@ -9,6 +9,7 @@ import enRollCall from '../locales/en/rollCall.json';
 import enSecretary from '../locales/en/secretary.json';
 import enAuth from '../locales/en/auth.json';
 import enDocumentHub from '../locales/en/documenthub.json';
+import enBookkeeper from '../locales/en/bookkeeper.json';
 
 import zhCommon from '../locales/zh-TW/common.json';
 import zhDashboard from '../locales/zh-TW/dashboard.json';
@@ -17,6 +18,7 @@ import zhRollCall from '../locales/zh-TW/rollCall.json';
 import zhSecretary from '../locales/zh-TW/secretary.json';
 import zhAuth from '../locales/zh-TW/auth.json';
 import zhDocumentHub from '../locales/zh-TW/documenthub.json';
+import zhBookkeeper from '../locales/zh-TW/bookkeeper.json';
 
 const resources = {
   en: {
@@ -27,6 +29,7 @@ const resources = {
     secretary: enSecretary,
     auth: enAuth,
     documenthub: enDocumentHub,
+    bookkeeper: enBookkeeper,
   },
   'zh-TW': {
     common: zhCommon,
@@ -36,6 +39,7 @@ const resources = {
     secretary: zhSecretary,
     auth: zhAuth,
     documenthub: zhDocumentHub,
+    bookkeeper: zhBookkeeper,
   },
 };
 

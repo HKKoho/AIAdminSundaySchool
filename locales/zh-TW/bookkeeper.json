@@ -1,0 +1,50 @@
+{
+  "header": {
+    "title": "AI 記帳助手",
+    "subtitle": "自動化文件分類和記帳",
+    "backToHome": "返回主頁"
+  },
+  "connection": {
+    "title": "WhatsApp 連接",
+    "subtitle": "連接您的 WhatsApp 以接收和處理文件",
+    "status": {
+      "connected": "已連接",
+      "disconnected": "已斷開",
+      "connecting": "連接中",
+      "qr_ready": "掃描 QR 碼"
+    },
+    "connecting": "正在連接 WhatsApp 伺服器...",
+    "connectedMessage": "WhatsApp 已連接並準備接收文件",
+    "scanQR": "使用 WhatsApp 掃描 QR 碼",
+    "qrInstructions": "打開手機 WhatsApp → 設定 → 已連結的裝置 → 連結裝置 → 掃描此 QR 碼"
+  },
+  "errors": {
+    "serverNotRunning": "伺服器未運行或無法連接",
+    "startServer": "使用以下命令啟動伺服器"
+  },
+  "stats": {
+    "totalDocuments": "文件總數",
+    "classified": "已分類",
+    "pending": "待處理"
+  },
+  "documents": {
+    "title": "最近文件",
+    "noDocuments": "尚未收到任何文件",
+    "vendor": "供應商",
+    "amount": "金額",
+    "status": {
+      "pending": "待處理",
+      "classified": "已分類",
+      "rejected": "已拒絕"
+    }
+  },
+  "instructions": {
+    "title": "使用方法",
+    "step1": "掃描 QR 碼連接您的 WhatsApp 帳戶",
+    "step2": "將收據、發票和財務文件發送或轉發到您的 WhatsApp",
+    "step3": "AI 將自動分類並從您的文件中提取數據"
+  },
+  "common": {
+    "copyright": "© {{year}} 教會管理系統。保留所有權利。"
+  }
+}

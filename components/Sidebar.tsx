@@ -76,7 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onSelectView, userEmail,
       ),
       labelKey: 'landing.aiBookkeeper.title',
       color: 'bg-blue-600 hover:bg-blue-700',
-      available: false,
+      available: true,
     },
     {
       id: 'documenthub',
