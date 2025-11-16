@@ -9,6 +9,9 @@ import LessonPlanBuilder from './components/LessonPlanBuilder';
 import RollCallSystem from './components/RollCallSystem';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import WhatsAppSecretary from './components/WhatsAppSecretary';
+import DocumentHub from './components/DocumentHub';
+import SignInPage from './components/SignInPage';
+import Sidebar, { ViewType } from './components/Sidebar';
 import { CLASS_GROUPS } from './constants';
 import Card from './components/common/Card';
 import Button from './components/common/Button';
@@ -89,10 +92,11 @@ const SetupModal: React.FC<SetupModalProps> = ({ classInfo, onSave, onClose }) =
 
 interface ClassArrangementProps {
     onBack: () => void;
+    hideHeader?: boolean;
 }
 
-const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
-    const { t } = useTranslation('dashboard');
+const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader = false }) => {
+    const { t, i18n } = useTranslation('dashboard');
     const {
         arrangements,
         loading,
@@ -106,6 +110,16 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassArrangementInfo | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const fieldLabels: Record<keyof Omit<ClassArrangementInfo, 'id'>, string> = {
+        time: t('classArrangement.fields.time'),
+        beginningDate: t('classArrangement.fields.beginningDate'),
+        duration: t('classArrangement.fields.duration'),
+        place: t('classArrangement.fields.place'),
+        teacher: t('classArrangement.fields.teacher'),
+        focusLevel: t('classArrangement.fields.focusLevel'),
+        group: t('classArrangement.fields.group'),
+    };
 
     const handleManageClick = () => {
         if (isManaging) {
@@ -196,25 +210,8 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
         }
     };
 
-    return (
-        <div className="min-h-screen flex flex-col bg-gray-50 text-gray-800">
-            <header className="bg-brand-primary text-white p-4 shadow-md">
-              <div className="container mx-auto flex justify-between items-center">
-                <div className="flex items-center space-x-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    <div>
-                        <h1 className="text-2xl font-bold">{t('classArrangement.title')}</h1>
-                        <p className="text-xs text-brand-light opacity-80 -mt-1">{t('classArrangement.subtitle')}</p>
-                    </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <LanguageSwitcher />
-                  <Button variant="secondary" onClick={handleManageClick}>{isManaging ? t('common:navigation.finishManaging') : t('common:navigation.manageClasses')}</Button>
-                  <button onClick={onBack} className="text-sm hover:underline">{t('common:navigation.backToHome')}</button>
-                </div>
-              </div>
-            </header>
-            <main className="flex-grow container mx-auto p-4 md:p-8">
+    const content = (
+        <div className="container mx-auto p-4 md:p-8">
                 <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
                     <h2 className="text-2xl font-bold text-brand-dark">{t('classArrangement.heading')}</h2>
                     <div className="flex items-center space-x-2">
@@ -299,9 +296,47 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
                         <p className="mt-2 text-gray-500">{t('classArrangement.noClassesDescription')}</p>
                     </div>
                 ) : null}
+        </div>
+    );
+
+    if (hideHeader) {
+        return (
+            <>
+                {content}
+                {isModalOpen && editingClass && (
+                    <SetupModal
+                        classInfo={editingClass}
+                        onSave={handleSave}
+                        onClose={handleCloseModal}
+                    />
+                )}
+            </>
+        );
+    }
+
+    return (
+        <div className="min-h-screen flex flex-col bg-gray-50 text-gray-800">
+            <header className="bg-brand-primary text-white p-4 shadow-md">
+              <div className="container mx-auto flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <div>
+                        <h1 className="text-2xl font-bold">{t('classArrangement.title')}</h1>
+                        <p className="text-xs text-brand-light opacity-80 -mt-1">{t('classArrangement.subtitle')}</p>
+                    </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <LanguageSwitcher />
+                  <Button variant="secondary" onClick={handleManageClick}>{isManaging ? t('common:navigation.finishManaging') : t('common:navigation.manageClasses')}</Button>
+                  <button onClick={onBack} className="text-sm hover:underline">{t('common:navigation.backToHome')}</button>
+                </div>
+              </div>
+            </header>
+            <main className="flex-grow">
+                {content}
             </main>
             {isModalOpen && editingClass && (
-                <SetupModal 
+                <SetupModal
                     classInfo={editingClass}
                     onSave={handleSave}
                     onClose={handleCloseModal}
@@ -318,10 +353,19 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack }) => {
 
 interface RollCallProps {
     onBack: () => void;
+    hideHeader?: boolean;
 }
 
-const RollCall: React.FC<RollCallProps> = ({ onBack }) => {
+const RollCall: React.FC<RollCallProps> = ({ onBack, hideHeader = false }) => {
     const { t } = useTranslation('dashboard');
+
+    if (hideHeader) {
+        return (
+            <div className="container mx-auto p-4 md:p-8">
+                <RollCallSystem />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 text-gray-800">
@@ -355,7 +399,7 @@ const RollCall: React.FC<RollCallProps> = ({ onBack }) => {
 // ========== Landing Page Component ==========
 
 interface LandingPageProps {
-  onSelectView: (view: 'classes' | 'support' | 'rollcall' | 'whatsapp') => void;
+  onSelectView: (view: 'classes' | 'support' | 'rollcall' | 'whatsapp' | 'documenthub') => void;
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
@@ -427,9 +471,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
                 <p className="text-gray-600 mt-2">{t('landing.aiBookkeeper.description')}</p>
             </div>
         </Card>
-        <Card onClick={() => alert(t('landing.aiEventOrganizer.title') + ' - ' + t('common:common.comingSoon'))} className="group text-center">
+        <Card onClick={() => onSelectView('documenthub')} className="group text-center">
             <div className="p-6 bg-pink-600 group-hover:bg-pink-700 transition-colors duration-300 flex justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </div>
             <div className="p-8">
                 <h2 className="text-3xl font-bold text-brand-dark">{t('landing.aiEventOrganizer.title')}</h2>
@@ -451,9 +495,10 @@ type SupportView = 'selector' | 'dashboard' | 'builder';
 
 interface SupportAppProps {
   onBack: () => void;
+  hideHeader?: boolean;
 }
 
-const SupportApp: React.FC<SupportAppProps> = ({ onBack }) => {
+const SupportApp: React.FC<SupportAppProps> = ({ onBack, hideHeader = false }) => {
   const { t } = useTranslation('dashboard');
   const [selectedGroup, setSelectedGroup] = useLocalStorage<ClassGroup | null>('selectedClassGroup', null);
   const [view, setView] = useState<SupportView>('selector');
@@ -531,6 +576,14 @@ const SupportApp: React.FC<SupportAppProps> = ({ onBack }) => {
     }
   };
 
+  if (hideHeader) {
+    return (
+      <div className="container mx-auto p-4 md:p-8">
+        {renderView()}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {renderHeader()}
@@ -548,25 +601,68 @@ const SupportApp: React.FC<SupportAppProps> = ({ onBack }) => {
 // ========== Main App Router ==========
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'landing' | 'classes' | 'support' | 'rollcall' | 'whatsapp'>('landing');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [view, setView] = useState<ViewType>('classes');
 
-  const renderContent = () => {
+  const handleSignIn = (email: string) => {
+    setUserEmail(email);
+    setIsAuthenticated(true);
+  };
+
+  const handleSignOut = () => {
+    setIsAuthenticated(false);
+    setUserEmail('');
+    setView('classes');
+  };
+
+  const renderMainContent = () => {
     switch (view) {
       case 'classes':
-        return <ClassArrangement onBack={() => setView('landing')} />;
+        return <ClassArrangement onBack={() => {}} hideHeader={true} />;
       case 'support':
-        return <SupportApp onBack={() => setView('landing')} />;
+        return <SupportApp onBack={() => {}} hideHeader={true} />;
       case 'rollcall':
-        return <RollCall onBack={() => setView('landing')} />;
+        return <RollCall onBack={() => {}} hideHeader={true} />;
       case 'whatsapp':
-        return <WhatsAppSecretary onBack={() => setView('landing')} />;
-      case 'landing':
+        return <WhatsAppSecretary onBack={() => {}} hideHeader={true} />;
+      case 'documenthub':
+        return <DocumentHub onBack={() => {}} hideHeader={true} />;
+      case 'home':
       default:
-        return <LandingPage onSelectView={setView} />;
+        return (
+          <div className="flex items-center justify-center h-full bg-brand-light p-8">
+            <div className="text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto mb-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h1 className="text-4xl font-bold text-brand-dark mb-4">Welcome, {userEmail}!</h1>
+              <p className="text-gray-600 text-lg">Select a module from the sidebar to get started.</p>
+            </div>
+          </div>
+        );
     }
   };
 
-  return <>{renderContent()}</>;
+  // Show sign-in page if not authenticated
+  if (!isAuthenticated) {
+    return <SignInPage onSignIn={handleSignIn} />;
+  }
+
+  // Show main app with sidebar layout
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar
+        currentView={view}
+        onSelectView={setView}
+        userEmail={userEmail}
+        onSignOut={handleSignOut}
+      />
+      <main className="flex-1 overflow-y-auto">
+        {renderMainContent()}
+      </main>
+    </div>
+  );
 };
 
 export default App;

@@ -1,13 +1,13 @@
 {
   "landing": {
     "title": "教會行政助理",
-    "subtitle": "您的一站式行政管理資源。",
+    "subtitle": "AI 推動，策劃和運作",
     "classes": {
-      "title": "課程",
+      "title": "課程與活動",
       "description": "查看及管理季度課程表與安排。"
     },
     "teacherSupport": {
-      "title": "支援老師",
+      "title": "事工支援",
       "description": "AI 驅動的課程計畫、創意生成及資源。"
     },
     "rollCall": {
@@ -15,7 +15,7 @@
       "description": "管理學生出席與點名記錄。"
     },
     "whatsappSecretary": {
-      "title": "WhatsApp 秘書",
+      "title": "WhatsApp AI 秘書",
       "description": "自動化訊息管理及通訊助理。"
     },
     "aiBookkeeper": {
@@ -23,8 +23,8 @@
       "description": "智能財務追蹤及教會預算管理。"
     },
     "aiEventOrganizer": {
-      "title": "AI 活動統籌",
-      "description": "藉助 AI 協助規劃及協調教會活動。"
+      "title": "文檔中心",
+      "description": "集中式文檔儲存及管理系統。"
     }
   },
   "classArrangement": {
@@ -82,5 +82,9 @@
   },
   "info": {
     "title": "ℹ️ 資訊"
+  },
+  "auth": {
+    "signedInAs": "登入身份",
+    "signOut": "登出"
   }
 }

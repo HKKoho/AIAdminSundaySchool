@@ -7,12 +7,16 @@ import enDashboard from '../locales/en/dashboard.json';
 import enLessonPlan from '../locales/en/lessonPlan.json';
 import enRollCall from '../locales/en/rollCall.json';
 import enSecretary from '../locales/en/secretary.json';
+import enAuth from '../locales/en/auth.json';
+import enDocumentHub from '../locales/en/documenthub.json';
 
 import zhCommon from '../locales/zh-TW/common.json';
 import zhDashboard from '../locales/zh-TW/dashboard.json';
 import zhLessonPlan from '../locales/zh-TW/lessonPlan.json';
 import zhRollCall from '../locales/zh-TW/rollCall.json';
 import zhSecretary from '../locales/zh-TW/secretary.json';
+import zhAuth from '../locales/zh-TW/auth.json';
+import zhDocumentHub from '../locales/zh-TW/documenthub.json';
 
 const resources = {
   en: {
@@ -21,6 +25,8 @@ const resources = {
     lessonPlan: enLessonPlan,
     rollCall: enRollCall,
     secretary: enSecretary,
+    auth: enAuth,
+    documenthub: enDocumentHub,
   },
   'zh-TW': {
     common: zhCommon,
@@ -28,6 +34,8 @@ const resources = {
     lessonPlan: zhLessonPlan,
     rollCall: zhRollCall,
     secretary: zhSecretary,
+    auth: zhAuth,
+    documenthub: zhDocumentHub,
   },
 };
 

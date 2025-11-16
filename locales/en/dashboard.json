@@ -3,11 +3,11 @@
     "title": "Church Administration Assistant",
     "subtitle": "Your all-in-one resource for better administration.",
     "classes": {
-      "title": "Classes",
+      "title": "Classes & Activities",
       "description": "View and manage quarterly class schedules and arrangements."
     },
     "teacherSupport": {
-      "title": "Teacher Support",
+      "title": "Ministry Support",
       "description": "AI-powered lesson planning, creative generation and resources."
     },
     "rollCall": {
@@ -23,8 +23,8 @@
       "description": "Smart financial tracking and church budget management."
     },
     "aiEventOrganizer": {
-      "title": "AI Event Organizer",
-      "description": "Plan and coordinate church events with AI assistance."
+      "title": "Document Hub",
+      "description": "Centralized document storage and management system."
     }
   },
   "classArrangement": {
@@ -82,5 +82,9 @@
   },
   "info": {
     "title": "ℹ️ Information"
+  },
+  "auth": {
+    "signedInAs": "Signed in as",
+    "signOut": "Sign Out"
   }
 }

@@ -8,6 +8,7 @@ import type { ChurchEvent, Task, Member } from '../types-secretary';
 
 interface WhatsAppSecretaryProps {
   onBack: () => void;
+  hideHeader?: boolean;
 }
 
 // Helper functions for audio decoding and playback
@@ -40,7 +41,7 @@ async function decodeAudioData(
   return buffer;
 }
 
-const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
+const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack, hideHeader = false }) => {
   const { t, i18n } = useTranslation('secretary');
   const [events, setEvents] = useState<ChurchEvent[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -75,7 +76,9 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
     }
     return () => {
       stopPlayback();
-      audioContextRef.current?.close();
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close();
+      }
     };
   }, []);
 
@@ -405,6 +408,67 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
     );
   }
 
+  if (hideHeader) {
+    return (
+      <div className="flex flex-col bg-gray-50 h-full">
+        {/* Navigation Tabs */}
+        <nav className="bg-white shadow">
+          <div className="container mx-auto px-4">
+            <div className="flex justify-between items-center">
+              <div className="flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'dashboard'
+                      ? 'border-purple-600 text-purple-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('tabs.dashboard')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('pastoral')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'pastoral'
+                      ? 'border-purple-600 text-purple-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('tabs.pastoral')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('events')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'events'
+                      ? 'border-purple-600 text-purple-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('tabs.events')}
+                </button>
+              </div>
+              <a
+                href="https://whatsapp-secretary-ai.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white text-purple-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-50 transition-colors border border-purple-600"
+              >
+                {t('header.prototype')}
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <main className="flex-grow container mx-auto p-4 md:p-8">
+          {activeTab === 'dashboard' && renderDashboard()}
+          {activeTab === 'pastoral' && renderPastoralAgent()}
+          {activeTab === 'events' && renderEventAgent()}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
@@ -421,6 +485,14 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack }) => {
           </div>
           <div className="flex items-center space-x-4">
             <LanguageSwitcher />
+            <a
+              href="https://whatsapp-secretary-ai.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white text-purple-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-50 transition-colors"
+            >
+              {t('header.prototype')}
+            </a>
             <button onClick={onBack} className="text-sm hover:underline">
               {t('header.backToHome')}
             </button>

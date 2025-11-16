@@ -1,3 +1,20 @@
+// Document Hub Types
+export interface DocumentMetadata {
+  id: string;
+  title: string;
+  fileName: string;
+  filePath: string; // Path on NAS
+  department: string;
+  ministry: string;
+  docType: string;
+  year: number;
+  status: string;
+  uploadDate: string;
+  uploadedBy: string;
+  fileSize: number;
+  mimeType: string;
+}
+
 export enum ClassGroup {
   CHILDREN = '兒童 (4-10歲)',
   YOUTH = '青少年 (11-17歲)',
