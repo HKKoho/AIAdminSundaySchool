@@ -9,6 +9,23 @@ Real-time WhatsApp integration for automated document classification and bookkee
 - ✅ AI-powered document classification using Google Gemini
 - ✅ Real-time document processing
 - ✅ RESTful API for frontend integration
+- ✅ **Cloud deployment ready** (Railway, Render, etc.)
+
+## Deployment Options
+
+### 🚀 **Cloud Deployment (Recommended)**
+
+Deploy to Railway for a fully cloud-based solution:
+
+**📖 [Complete Railway Deployment Guide →](./RAILWAY_DEPLOYMENT.md)**
+
+Benefits:
+- No local server needed
+- Always online
+- QR code appears on your Vercel site
+- Automatic deployments from GitHub
+
+### 💻 **Local Development**
 
 ## Prerequisites
 
