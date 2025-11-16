@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 
@@ -21,6 +21,12 @@ interface NavItem {
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, onSelectView, userEmail, onSignOut }) => {
   const { t } = useTranslation('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleSelectView = (view: ViewType) => {
+    onSelectView(view);
+    setIsMobileMenuOpen(false); // Close mobile menu after selection
+  };
 
   const navItems: NavItem[] = [
     {
@@ -92,64 +98,98 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onSelectView, userEmail,
   ];
 
   return (
-    <aside className="w-72 bg-brand-dark text-white flex flex-col h-screen sticky top-0">
-      {/* Header */}
-      <div className="p-6 border-b border-brand-primary/30">
-        <h1 className="text-xl font-bold mb-1">{t('landing.title')}</h1>
-        <p className="text-sm text-brand-light opacity-80">{t('landing.subtitle')}</p>
-      </div>
+    <>
+      {/* Mobile Menu Button - Fixed Top */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 bg-brand-dark text-white p-3 rounded-lg shadow-lg hover:bg-brand-primary transition-colors"
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        )}
+      </button>
 
-      {/* Navigation Items */}
-      <nav className="flex-1 overflow-y-auto py-4">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => item.available ? onSelectView(item.id) : alert(t('landing.aiBookkeeper.title') + ' - Coming Soon!')}
-            disabled={!item.available}
-            className={`
-              w-full px-6 py-4 flex items-center space-x-4 transition-all duration-200
-              ${currentView === item.id ? 'bg-brand-primary/20 border-l-4 border-brand-accent' : 'hover:bg-brand-primary/10'}
-              ${!item.available ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-            `}
-          >
-            <div className={`p-2 rounded-lg ${item.color} flex-shrink-0`}>
-              {item.icon}
-            </div>
-            <div className="flex-1 text-left">
-              <div className="font-medium">{t(item.labelKey)}</div>
-              {!item.available && (
-                <div className="text-xs text-brand-light opacity-60">Coming Soon</div>
-              )}
-            </div>
-          </button>
-        ))}
-      </nav>
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
-      {/* Footer - User Info & Sign Out */}
-      <div className="p-6 border-t border-brand-primary/30">
-        <div className="mb-4">
-          <LanguageSwitcher />
+      {/* Sidebar */}
+      <aside className={`
+        w-72 bg-brand-dark text-white flex flex-col h-screen sticky top-0
+        lg:translate-x-0
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        fixed lg:static z-40
+        transition-transform duration-300 ease-in-out
+      `}>
+        {/* Header */}
+        <div className="p-6 border-b border-brand-primary/30 flex-shrink-0">
+          <h1 className="text-xl font-bold mb-1">{t('landing.title')}</h1>
+          <p className="text-sm text-brand-light opacity-80">{t('landing.subtitle')}</p>
         </div>
 
-        {userEmail && (
-          <div className="space-y-3">
-            <div className="text-sm">
-              <div className="text-brand-light text-xs mb-1">{t('auth.signedInAs')}</div>
-              <div className="font-medium truncate">{userEmail}</div>
-            </div>
+        {/* Navigation Items - Scrollable */}
+        <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-brand-primary scrollbar-track-brand-dark/50">
+          {navItems.map((item) => (
             <button
-              onClick={onSignOut}
-              className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-2"
+              key={item.id}
+              onClick={() => item.available ? handleSelectView(item.id) : alert(t('landing.aiBookkeeper.title') + ' - Coming Soon!')}
+              disabled={!item.available}
+              className={`
+                w-full px-6 py-4 flex items-center space-x-4 transition-all duration-200
+                ${currentView === item.id ? 'bg-brand-primary/20 border-l-4 border-brand-accent' : 'hover:bg-brand-primary/10'}
+                ${!item.available ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+              `}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span>{t('auth.signOut')}</span>
+              <div className={`p-2 rounded-lg ${item.color} flex-shrink-0`}>
+                {item.icon}
+              </div>
+              <div className="flex-1 text-left">
+                <div className="font-medium">{t(item.labelKey)}</div>
+                {!item.available && (
+                  <div className="text-xs text-brand-light opacity-60">Coming Soon</div>
+                )}
+              </div>
             </button>
+          ))}
+        </nav>
+
+        {/* Footer - User Info & Sign Out */}
+        <div className="p-6 border-t border-brand-primary/30 flex-shrink-0">
+          <div className="mb-4">
+            <LanguageSwitcher />
           </div>
-        )}
-      </div>
-    </aside>
+
+          {userEmail && (
+            <div className="space-y-3">
+              <div className="text-sm">
+                <div className="text-brand-light text-xs mb-1">{t('auth.signedInAs')}</div>
+                <div className="font-medium truncate">{userEmail}</div>
+              </div>
+              <button
+                onClick={onSignOut}
+                className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>{t('auth.signOut')}</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
   );
 };
 

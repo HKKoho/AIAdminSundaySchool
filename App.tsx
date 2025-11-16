@@ -661,7 +661,7 @@ const App: React.FC = () => {
         userEmail={userEmail}
         onSignOut={handleSignOut}
       />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-16 lg:pt-0">
         {renderMainContent()}
       </main>
     </div>
