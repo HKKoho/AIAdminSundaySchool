@@ -78,7 +78,9 @@
     "noMembers": "請開始新增成員或匯入名單。",
     "noMembersToExport": "沒有成員可匯出",
     "confirmReset": "請確保您已儲存檔案後再重置。\n\n您確定要繼續重置嗎？",
-    "confirmDelete": "確定要刪除 {{name}} 嗎？"
+    "confirmDelete": "確定要刪除 {{name}} 嗎？",
+    "savedToDatabase": "出席記錄已成功儲存！",
+    "saveToDbFailed": "儲存到資料庫失敗。記錄已儲存到本地。"
   },
   "status": {
     "present": "已到",
@@ -93,5 +95,11 @@
     "time": "時間",
     "present": "出席",
     "absent": "缺席"
+  },
+  "records": {
+    "noRecords": "未找到出席記錄",
+    "attendance": "出席人數",
+    "rate": "出席率",
+    "viewDetails": "查看詳情"
   }
 }

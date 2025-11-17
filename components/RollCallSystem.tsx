@@ -47,6 +47,7 @@ const RollCallSystem: React.FC = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [showRecoveryAlert, setShowRecoveryAlert] = useState(false);
   const [recoveryData, setRecoveryData] = useState<any>(null);
+  const [savedRecords, setSavedRecords] = useState<any[]>([]);
 
   // Load saved data on component mount
   useEffect(() => {
@@ -98,6 +99,36 @@ const RollCallSystem: React.FC = () => {
       generateQR();
     }
   }, [googleFormUrl]);
+
+  // Load saved attendance records for non-rollcall tabs
+  useEffect(() => {
+    const loadRecords = async () => {
+      if (activeTab === 'rollcall') return;
+
+      // Map tab to event type for church calendar events
+      const eventTypeMap: { [key: string]: string } = {
+        'worship': 'worship',
+        'lordsupper': 'lordsupper',
+        'calendar': 'christmaseve,easterfriday,eastersunday'
+      };
+
+      const eventTypeQuery = eventTypeMap[activeTab];
+      if (!eventTypeQuery) return;
+
+      try {
+        const response = await fetch(`/api/attendance/get?eventType=${eventTypeQuery}`);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          setSavedRecords(Array.isArray(result.data) ? result.data : [result.data]);
+        }
+      } catch (error) {
+        console.error('Error loading saved records:', error);
+      }
+    };
+
+    loadRecords();
+  }, [activeTab]);
 
   // Timer effect
   useEffect(() => {
@@ -224,12 +255,61 @@ const RollCallSystem: React.FC = () => {
     }
   };
 
+  // Save to database
+  const saveToDatabase = async () => {
+    try {
+      const attendanceData = {
+        eventType,
+        eventDate: new Date().toISOString().split('T')[0],
+        members: members.map(member => ({
+          id: member.id,
+          name: member.name,
+          present: attendance[member.id]?.present || false,
+          timestamp: attendance[member.id]?.timestamp || new Date().toISOString()
+        }))
+      };
+
+      const response = await fetch('/api/attendance/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(attendanceData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        return true;
+      } else {
+        console.error('Failed to save to database:', result.error);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error saving to database:', error);
+      // Fallback to localStorage if DB fails
+      return false;
+    }
+  };
+
   // Export handler
-  const handleExport = () => {
+  const handleExport = async () => {
     if (members.length === 0) {
       alert(t('messages.noMembersToExport'));
       return;
     }
+
+    // Save to database first
+    const saved = await saveToDatabase();
+    if (saved) {
+      alert(t('messages.savedToDatabase'));
+      // Clear temporary data after successful save
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      alert(t('messages.saveToDbFailed'));
+    }
+
+    // Continue with CSV export
     const date = new Date().toLocaleDateString().replace(/\//g, '-');
     const headers = [t('csvHeaders.name'), t('csvHeaders.status'), t('csvHeaders.time')];
 
@@ -488,40 +568,77 @@ const RollCallSystem: React.FC = () => {
     </div>
   );
 
-  const renderWorship = () => (
+  const renderAttendanceRecords = (records: any[], title: string) => (
     <div className="p-4 max-w-6xl mx-auto">
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.worship.title')}</h3>
-        <p className="text-gray-600 mb-4">{t('tabs.worship.description')}</p>
-        <div className="bg-brand-light p-4 rounded-lg">
-          <p className="text-sm text-gray-700">{t('tabs.worship.comingSoon')}</p>
+      <h2 className="text-2xl font-bold text-brand-dark mb-6">{title}</h2>
+      {records.length === 0 ? (
+        <div className="bg-white p-6 rounded-lg shadow text-center">
+          <p className="text-gray-500">{t('records.noRecords')}</p>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-4">
+          {records.map((record, index) => (
+            <Card key={record.id || index} className="p-4">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-brand-dark">
+                    {t(`eventTypes.${record.eventType}`)}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {new Date(record.eventDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-700">
+                    {t('records.attendance')}: {record.members.filter((m: any) => m.present).length} / {record.members.length}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {t('records.rate')}: {Math.round((record.members.filter((m: any) => m.present).length / record.members.length) * 100)}%
+                  </p>
+                </div>
+              </div>
+              <div className="border-t pt-3">
+                <details>
+                  <summary className="cursor-pointer text-sm font-medium text-brand-primary hover:text-brand-dark">
+                    {t('records.viewDetails')}
+                  </summary>
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {record.members.map((member: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className={`p-2 rounded text-sm ${
+                          member.present ? 'bg-green-50 text-green-800' : 'bg-gray-50 text-gray-600'
+                        }`}
+                      >
+                        <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
+                          member.present ? 'bg-green-500' : 'bg-gray-400'
+                        }`}></span>
+                        {member.name}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 
-  const renderLordSupper = () => (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.lordsupper.title')}</h3>
-        <p className="text-gray-600 mb-4">{t('tabs.lordsupper.description')}</p>
-        <div className="bg-brand-light p-4 rounded-lg">
-          <p className="text-sm text-gray-700">{t('tabs.lordsupper.comingSoon')}</p>
-        </div>
-      </div>
-    </div>
+  const renderWorship = () => renderAttendanceRecords(
+    savedRecords.filter(r => r.eventType === 'worship'),
+    t('tabs.worship.title')
   );
 
-  const renderCalendar = () => (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.calendar.title')}</h3>
-        <p className="text-gray-600 mb-4">{t('tabs.calendar.description')}</p>
-        <div className="bg-brand-light p-4 rounded-lg">
-          <p className="text-sm text-gray-700">{t('tabs.calendar.comingSoon')}</p>
-        </div>
-      </div>
-    </div>
+  const renderLordSupper = () => renderAttendanceRecords(
+    savedRecords.filter(r => r.eventType === 'lordsupper'),
+    t('tabs.lordsupper.title')
+  );
+
+  const renderCalendar = () => renderAttendanceRecords(
+    savedRecords.filter(r => ['christmaseve', 'easterfriday', 'eastersunday'].includes(r.eventType)),
+    t('tabs.calendar.title')
   );
 
   const renderAnalysis = () => (
