@@ -726,7 +726,7 @@ const DocumentHubContent: React.FC<{
 
   if (hideHeader) {
     return (
-      <div className="container mx-auto p-4 md:p-8">
+      <div className="w-full px-4 py-4 md:px-8 md:py-8">
         {!isAuthenticated ? (
           <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />
         ) : (

@@ -316,7 +316,7 @@ const WhatsAppBookkeeper: React.FC<WhatsAppBookkeeperProps> = ({ onBack, hideHea
   if (hideHeader) {
     return (
       <div className="flex flex-col bg-gray-50 h-full">
-        <main className="flex-grow container mx-auto p-4 md:p-8">
+        <main className="flex-grow w-full px-4 py-4 md:px-8 md:py-8">
           {renderContent()}
         </main>
       </div>
