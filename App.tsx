@@ -654,14 +654,14 @@ const App: React.FC = () => {
 
   // Show main app with sidebar layout
   return (
-    <div className="lg:flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar
         currentView={view}
         onSelectView={setView}
         userEmail={userEmail}
         onSignOut={handleSignOut}
       />
-      <main className="w-full lg:flex-1 overflow-y-auto pt-16 lg:pt-0 min-h-screen lg:min-h-0">
+      <main className="flex-1 overflow-y-auto pt-16 lg:pt-0">
         {renderMainContent()}
       </main>
     </div>
