@@ -76,10 +76,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   } catch (error) {
     console.error('MongoDB test error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
+      error: errorMessage,
+      stack: errorStack,
+      mongodbUri: process.env.MONGODB_URI ? 'SET' : 'NOT SET',
+      hint: 'Check that MONGODB_URI environment variable is set in Vercel'
     });
   }
 }
