@@ -32,6 +32,19 @@ const SignInPage: React.FC<SignInPageProps> = ({ onSignIn }) => {
     }, 500);
   };
 
+  const handleGuestLogin = () => {
+    setEmail('guest@demo.com');
+    setPassword('demo123');
+    setError('');
+    setIsLoading(true);
+
+    // Auto-login after a brief delay
+    setTimeout(() => {
+      onSignIn('guest@demo.com');
+      setIsLoading(false);
+    }, 300);
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-brand-light to-gray-100 p-4">
       {/* Language Switcher in top-right corner */}
@@ -133,6 +146,29 @@ const SignInPage: React.FC<SignInPageProps> = ({ onSignIn }) => {
                 {t('signIn.demoHint')}
               </p>
             </div>
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">{t('signIn.or')}</span>
+              </div>
+            </div>
+
+            {/* Guest Demo Login Button */}
+            <Button
+              type="button"
+              onClick={handleGuestLogin}
+              disabled={isLoading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              {t('signIn.guestDemo')}
+            </Button>
 
             {/* Forgot Password Link */}
             <div className="text-center">
