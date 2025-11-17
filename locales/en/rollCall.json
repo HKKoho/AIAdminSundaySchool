@@ -55,6 +55,11 @@
     "pause": "Pause",
     "reset": "Reset"
   },
+  "qrCode": {
+    "title": "Google Form QR",
+    "scanToFill": "Scan to fill attendance",
+    "generating": "Generating..."
+  },
   "stats": {
     "attendance": "Attendance: {{present}} / {{total}}",
     "rate": "Rate: {{rate}}%"

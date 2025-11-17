@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import QRCode from 'qrcode';
 import Card from './common/Card';
 import Button from './common/Button';
 import { Alert, AlertDescription } from './common/Alert';
@@ -31,6 +32,10 @@ const RollCallSystem: React.FC = () => {
 
   // Event type state for roll call
   const [eventType, setEventType] = useState<EventType>('worship');
+
+  // QR Code state
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [googleFormUrl, setGoogleFormUrl] = useState<string>('https://forms.gle/example');
 
   // Initialize state variables
   const [members, setMembers] = useState<Member[]>([]);
@@ -70,6 +75,29 @@ const RollCallSystem: React.FC = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     }
   }, [members, attendance, currentFileName]);
+
+  // QR Code generation effect
+  useEffect(() => {
+    const generateQR = async () => {
+      try {
+        const qrDataUrl = await QRCode.toDataURL(googleFormUrl, {
+          width: 200,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        });
+        setQrCodeUrl(qrDataUrl);
+      } catch (err) {
+        console.error('Error generating QR code:', err);
+      }
+    };
+
+    if (googleFormUrl) {
+      generateQR();
+    }
+  }, [googleFormUrl]);
 
   // Timer effect
   useEffect(() => {
@@ -274,7 +302,8 @@ const RollCallSystem: React.FC = () => {
           </h2>
         )}
 
-        <div className="flex justify-center items-center mb-4">
+        <div className="flex justify-center items-center gap-4 mb-4 flex-wrap">
+          {/* Countdown Timer */}
           <Card className="p-3 bg-yellow-50">
             <div className="flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -307,6 +336,23 @@ const RollCallSystem: React.FC = () => {
               >
                 {t('timer.reset')}
               </button>
+            </div>
+          </Card>
+
+          {/* QR Code */}
+          <Card className="p-3 bg-blue-50">
+            <div className="text-center">
+              <p className="text-blue-600 font-medium mb-2">{t('qrCode.title')}</p>
+              {qrCodeUrl ? (
+                <div className="flex flex-col items-center">
+                  <img src={qrCodeUrl} alt="Google Form QR Code" className="w-40 h-40 rounded" />
+                  <p className="text-xs text-blue-500 mt-2">{t('qrCode.scanToFill')}</p>
+                </div>
+              ) : (
+                <div className="w-40 h-40 flex items-center justify-center bg-gray-100 rounded">
+                  <p className="text-xs text-gray-500">{t('qrCode.generating')}</p>
+                </div>
+              )}
             </div>
           </Card>
         </div>

@@ -55,6 +55,11 @@
     "pause": "暫停",
     "reset": "重設"
   },
+  "qrCode": {
+    "title": "Google 表單 QR 碼",
+    "scanToFill": "掃描填寫出席",
+    "generating": "生成中..."
+  },
   "stats": {
     "attendance": "出席人數: {{present}} / {{total}}",
     "rate": "出席率: {{rate}}%"
