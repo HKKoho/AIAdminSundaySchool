@@ -1,5 +1,40 @@
 {
   "systemTitle": "Cha Kwo Ling Baptist Church Roll Call App",
+  "tabs": {
+    "rollcall": {
+      "tab": "Roll Call"
+    },
+    "worship": {
+      "tab": "Worship",
+      "title": "Worship Attendance",
+      "description": "Track worship service attendance and participation.",
+      "comingSoon": "Worship Attendance System - Coming Soon! Track attendance for worship services with the same intuitive interface."
+    },
+    "lordsupper": {
+      "tab": "Lord's Supper",
+      "title": "Monthly Lord's Supper",
+      "description": "Track participation in monthly communion service.",
+      "comingSoon": "Lord's Supper Tracking - Coming Soon! Manage and track monthly communion participation records."
+    },
+    "calendar": {
+      "tab": "Church Calendar",
+      "title": "Special Church Calendar",
+      "description": "Track attendance for special church events and calendar activities.",
+      "comingSoon": "Church Calendar Events - Coming Soon! Track attendance for special events, conferences, and church calendar activities."
+    },
+    "analysis": {
+      "tab": "Analysis",
+      "title": "AI Attendance Analysis",
+      "description": "AI-powered analysis of attendance patterns and trends.",
+      "comingSoon": "AI Attendance Analysis - Coming Soon! Get intelligent insights into attendance trends, patterns, and member engagement."
+    },
+    "survey": {
+      "tab": "Survey",
+      "title": "AI Survey Generator",
+      "description": "AI-powered survey creation and analysis for church feedback.",
+      "comingSoon": "AI Survey System - Coming Soon! Create intelligent surveys and analyze member feedback with AI assistance."
+    }
+  },
   "recovery": {
     "found": "Unfinished roll call record found!",
     "recover": "Recover Record",

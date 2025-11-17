@@ -1,5 +1,40 @@
 {
   "systemTitle": "茶果嶺浸信會點名應用程序",
+  "tabs": {
+    "rollcall": {
+      "tab": "點名"
+    },
+    "worship": {
+      "tab": "崇拜",
+      "title": "崇拜出席",
+      "description": "追蹤崇拜服務的出席和參與情況。",
+      "comingSoon": "崇拜出席系統 - 即將推出！使用相同的直觀介面追蹤崇拜服務出席。"
+    },
+    "lordsupper": {
+      "tab": "聖餐",
+      "title": "每月聖餐",
+      "description": "追蹤每月聖餐服務的參與情況。",
+      "comingSoon": "聖餐追蹤 - 即將推出！管理和追蹤每月聖餐參與記錄。"
+    },
+    "calendar": {
+      "tab": "教會日曆",
+      "title": "特別教會日曆",
+      "description": "追蹤特別教會活動和日曆活動的出席情況。",
+      "comingSoon": "教會日曆活動 - 即將推出！追蹤特別活動、會議和教會日曆活動的出席。"
+    },
+    "analysis": {
+      "tab": "分析",
+      "title": "AI 出席分析",
+      "description": "AI 驅動的出席模式和趨勢分析。",
+      "comingSoon": "AI 出席分析 - 即將推出！獲得有關出席趨勢、模式和成員參與度的智能見解。"
+    },
+    "survey": {
+      "tab": "問卷",
+      "title": "AI 問卷生成器",
+      "description": "AI 驅動的問卷創建和教會回饋分析。",
+      "comingSoon": "AI 問卷系統 - 即將推出！在 AI 協助下創建智能問卷並分析成員回饋。"
+    }
+  },
   "recovery": {
     "found": "發現未完成的點名記錄！",
     "recover": "恢復記錄",

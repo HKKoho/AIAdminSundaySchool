@@ -20,8 +20,13 @@ interface AttendanceState {
 
 const STORAGE_KEY = 'rollCallSystemTemp';
 
+type RollCallTab = 'rollcall' | 'worship' | 'lordsupper' | 'calendar' | 'analysis' | 'survey';
+
 const RollCallSystem: React.FC = () => {
   const { t } = useTranslation('rollCall');
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<RollCallTab>('rollcall');
 
   // Initialize state variables
   const [members, setMembers] = useState<Member[]>([]);
@@ -216,7 +221,7 @@ const RollCallSystem: React.FC = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  return (
+  const renderRollCall = () => (
     <div className="p-4 max-w-6xl mx-auto">
       {showRecoveryAlert && (
         <Alert variant="warning" className="mb-4">
@@ -412,6 +417,150 @@ const RollCallSystem: React.FC = () => {
           ))}
         </div>
       )}
+    </div>
+  );
+
+  const renderWorship = () => (
+    <div className="p-4 max-w-6xl mx-auto">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.worship.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('tabs.worship.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('tabs.worship.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderLordSupper = () => (
+    <div className="p-4 max-w-6xl mx-auto">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.lordsupper.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('tabs.lordsupper.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('tabs.lordsupper.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCalendar = () => (
+    <div className="p-4 max-w-6xl mx-auto">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.calendar.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('tabs.calendar.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('tabs.calendar.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAnalysis = () => (
+    <div className="p-4 max-w-6xl mx-auto">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.analysis.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('tabs.analysis.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('tabs.analysis.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSurvey = () => (
+    <div className="p-4 max-w-6xl mx-auto">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.survey.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('tabs.survey.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('tabs.survey.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col bg-gray-50 h-full">
+      {/* Navigation Tabs */}
+      <nav className="bg-white shadow">
+        <div className="w-full px-2 sm:px-4">
+          <div className="flex justify-between items-center overflow-x-auto">
+            <div className="flex space-x-4 md:space-x-8">
+              <button
+                onClick={() => setActiveTab('rollcall')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                  activeTab === 'rollcall'
+                    ? 'border-green-600 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t('tabs.rollcall.tab')}
+              </button>
+              <button
+                onClick={() => setActiveTab('worship')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                  activeTab === 'worship'
+                    ? 'border-green-600 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t('tabs.worship.tab')}
+              </button>
+              <button
+                onClick={() => setActiveTab('lordsupper')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                  activeTab === 'lordsupper'
+                    ? 'border-green-600 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t('tabs.lordsupper.tab')}
+              </button>
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                  activeTab === 'calendar'
+                    ? 'border-green-600 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t('tabs.calendar.tab')}
+              </button>
+              <button
+                onClick={() => setActiveTab('analysis')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                  activeTab === 'analysis'
+                    ? 'border-green-600 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t('tabs.analysis.tab')}
+              </button>
+              <button
+                onClick={() => setActiveTab('survey')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                  activeTab === 'survey'
+                    ? 'border-green-600 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t('tabs.survey.tab')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="flex-grow w-full overflow-y-auto">
+        {activeTab === 'rollcall' && renderRollCall()}
+        {activeTab === 'worship' && renderWorship()}
+        {activeTab === 'lordsupper' && renderLordSupper()}
+        {activeTab === 'calendar' && renderCalendar()}
+        {activeTab === 'analysis' && renderAnalysis()}
+        {activeTab === 'survey' && renderSurvey()}
+      </main>
     </div>
   );
 };
