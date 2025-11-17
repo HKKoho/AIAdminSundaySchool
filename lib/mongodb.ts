@@ -35,5 +35,5 @@ export default clientPromise;
 
 export async function getDatabase(): Promise<Db> {
   const client = await clientPromise;
-  return client.db('sundayschool');
+  return client.db('churchadmin');
 }
