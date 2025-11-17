@@ -1,4 +1,5 @@
 import { getDatabase } from '../lib/mongodb';
+import { Department } from '../types/auth';
 
 const COLLECTION_NAME = 'attendance';
 
@@ -12,6 +13,11 @@ export interface AttendanceRecord {
     present: boolean;
     timestamp: string;
   }>;
+  // Access control fields
+  ownerId: string;          // User who created this record
+  department: Department;   // Which department this belongs to
+  assignedTo?: string[];    // Specific users who can access (optional)
+  isPublic: boolean;        // Whether all department members can see it
   createdAt: string;
   updatedAt: string;
 }
@@ -24,7 +30,8 @@ export interface AttendanceResponse {
 
 // Save attendance record
 export async function saveAttendanceRecord(
-  record: Omit<AttendanceRecord, 'id' | 'createdAt' | 'updatedAt'>
+  record: Omit<AttendanceRecord, 'id' | 'createdAt' | 'updatedAt'>,
+  userId: string // Current user ID for ownership
 ): Promise<AttendanceResponse> {
   try {
     const db = await getDatabase();
@@ -33,6 +40,9 @@ export async function saveAttendanceRecord(
     const attendanceRecord: AttendanceRecord = {
       id: `${record.eventType}_${record.eventDate}_${Date.now()}`,
       ...record,
+      ownerId: userId,
+      // Default to making records public within department if not specified
+      isPublic: record.isPublic ?? true,
       createdAt: now,
       updatedAt: now,
     };
@@ -46,15 +56,34 @@ export async function saveAttendanceRecord(
   }
 }
 
-// Get attendance records by event type
+// Get attendance records by event type with access control
 export async function getAttendanceByEventType(
-  eventType: string
+  eventType: string,
+  userId: string,
+  userDepartments: Department[]
 ): Promise<AttendanceResponse> {
   try {
     const db = await getDatabase();
+
+    // Build query with access control
+    const query: any = { eventType };
+
+    // If not super admin/senior pastor (doesn't have 'all' department)
+    if (!userDepartments.includes('all')) {
+      // User can see records that:
+      // 1. They own, OR
+      // 2. Are public and in their department, OR
+      // 3. Are specifically assigned to them
+      query.$or = [
+        { ownerId: userId },
+        { isPublic: true, department: { $in: userDepartments } },
+        { assignedTo: userId }
+      ];
+    }
+
     const records = await db
       .collection<AttendanceRecord>(COLLECTION_NAME)
-      .find({ eventType })
+      .find(query)
       .sort({ eventDate: -1 })
       .toArray();
 
