@@ -21,12 +21,16 @@ interface AttendanceState {
 const STORAGE_KEY = 'rollCallSystemTemp';
 
 type RollCallTab = 'rollcall' | 'worship' | 'lordsupper' | 'calendar' | 'analysis' | 'survey';
+type EventType = 'worship' | 'lordsupper' | 'christmaseve' | 'easterfriday' | 'eastersunday';
 
 const RollCallSystem: React.FC = () => {
   const { t } = useTranslation('rollCall');
 
   // Tab state
   const [activeTab, setActiveTab] = useState<RollCallTab>('rollcall');
+
+  // Event type state for roll call
+  const [eventType, setEventType] = useState<EventType>('worship');
 
   // Initialize state variables
   const [members, setMembers] = useState<Member[]>([]);
@@ -245,7 +249,25 @@ const RollCallSystem: React.FC = () => {
       )}
 
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-center mb-2 text-brand-dark">{t('systemTitle')}</h1>
+        <h1 className="text-3xl font-bold text-center mb-2 text-brand-dark">
+          {t('dynamicTitle', { eventType: t(`eventTypes.${eventType}`) })}
+        </h1>
+
+        {/* Event Type Selector */}
+        <div className="flex justify-center mb-4">
+          <select
+            value={eventType}
+            onChange={(e) => setEventType(e.target.value as EventType)}
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-sm font-medium text-gray-700"
+          >
+            <option value="worship">{t('eventTypes.worship')}</option>
+            <option value="lordsupper">{t('eventTypes.lordsupper')}</option>
+            <option value="christmaseve">{t('eventTypes.christmaseve')}</option>
+            <option value="easterfriday">{t('eventTypes.easterfriday')}</option>
+            <option value="eastersunday">{t('eventTypes.eastersunday')}</option>
+          </select>
+        </div>
+
         {currentFileName && (
           <h2 className="text-lg text-gray-600 text-center mb-4">
             {t('fileList', { fileName: currentFileName })}

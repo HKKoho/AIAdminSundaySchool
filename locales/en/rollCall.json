@@ -1,5 +1,13 @@
 {
   "systemTitle": "Cha Kwo Ling Baptist Church Roll Call App",
+  "dynamicTitle": "Cha Kwo Ling Baptist Church Roll Call in {{eventType}}",
+  "eventTypes": {
+    "worship": "Worship",
+    "lordsupper": "Lord's Supper",
+    "christmaseve": "Christmas Eve",
+    "easterfriday": "Easter Friday",
+    "eastersunday": "Easter Sunday"
+  },
   "tabs": {
     "rollcall": {
       "tab": "Roll Call"

@@ -1,5 +1,13 @@
 {
   "systemTitle": "茶果嶺浸信會點名應用程序",
+  "dynamicTitle": "茶果嶺浸信會{{eventType}}點名",
+  "eventTypes": {
+    "worship": "崇拜",
+    "lordsupper": "聖餐",
+    "christmaseve": "聖誕夜",
+    "easterfriday": "復活節受難日",
+    "eastersunday": "復活節主日"
+  },
   "tabs": {
     "rollcall": {
       "tab": "點名"
