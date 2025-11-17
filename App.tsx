@@ -212,8 +212,8 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader 
     };
 
     const content = (
-        <div className="w-full px-2 py-4 sm:px-4 md:px-8 md:py-8">
-                <div className="flex justify-between items-center mb-6 flex-wrap gap-4 w-full">
+        <div className="w-full py-4 md:py-8">
+                <div className="flex justify-between items-center mb-6 flex-wrap gap-4 px-2 sm:px-4 md:px-8">
                     <h2 className="text-2xl font-bold text-brand-dark">{t('classArrangement.heading')}</h2>
                     <div className="flex items-center space-x-2">
                         {isManaging && (
@@ -265,7 +265,7 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader 
                 )}
 
                 {!loading && arrangements.length > 0 ? (
-                    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 px-2 sm:px-4 md:px-8">
                         {arrangements.map(arrangement => (
                             <Card key={arrangement.id} className="flex flex-col">
                                 <div className="p-6 flex-grow">
@@ -661,7 +661,7 @@ const App: React.FC = () => {
         userEmail={userEmail}
         onSignOut={handleSignOut}
       />
-      <main className="flex-1 overflow-y-auto pt-16 lg:pt-0">
+      <main className="flex-1 min-w-0 overflow-y-auto pt-16 lg:pt-0">
         {renderMainContent()}
       </main>
     </div>
