@@ -413,7 +413,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack, hideHeade
       <div className="flex flex-col bg-gray-50 h-full">
         {/* Navigation Tabs */}
         <nav className="bg-white shadow">
-          <div className="w-full lg:max-w-7xl lg:mx-auto px-4">
+          <div className="w-full lg:max-w-7xl lg:mx-auto px-2 sm:px-4">
             <div className="flex justify-between items-center">
               <div className="flex space-x-8">
                 <button
@@ -460,7 +460,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack, hideHeade
         </nav>
 
         {/* Main Content */}
-        <main className="flex-grow w-full lg:max-w-7xl lg:mx-auto px-4 py-4 md:px-8 md:py-8">
+        <main className="flex-grow w-full lg:max-w-7xl lg:mx-auto px-2 py-4 sm:px-4 md:px-8 md:py-8">
           {activeTab === 'dashboard' && renderDashboard()}
           {activeTab === 'pastoral' && renderPastoralAgent()}
           {activeTab === 'events' && renderEventAgent()}
