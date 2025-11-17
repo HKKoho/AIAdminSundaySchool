@@ -212,8 +212,8 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader 
     };
 
     const content = (
-        <div className="w-full lg:max-w-7xl lg:mx-auto px-4 py-4 md:px-8 md:py-8">
-                <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+        <div className="w-full lg:max-w-7xl lg:mx-auto px-4 py-4 md:px-8 md:py-8 text-left">
+                <div className="flex justify-between items-center mb-6 flex-wrap gap-4 w-full">
                     <h2 className="text-2xl font-bold text-brand-dark">{t('classArrangement.heading')}</h2>
                     <div className="flex items-center space-x-2">
                         {isManaging && (
@@ -265,7 +265,7 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader 
                 )}
 
                 {!loading && arrangements.length > 0 ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {arrangements.map(arrangement => (
                             <Card key={arrangement.id} className="flex flex-col">
                                 <div className="p-6 flex-grow">
@@ -654,14 +654,14 @@ const App: React.FC = () => {
 
   // Show main app with sidebar layout
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="lg:flex h-screen overflow-hidden">
       <Sidebar
         currentView={view}
         onSelectView={setView}
         userEmail={userEmail}
         onSignOut={handleSignOut}
       />
-      <main className="w-full lg:flex-1 overflow-y-auto pt-16 lg:pt-0">
+      <main className="w-full lg:flex-1 overflow-y-auto pt-16 lg:pt-0 min-h-screen lg:min-h-0">
         {renderMainContent()}
       </main>
     </div>
