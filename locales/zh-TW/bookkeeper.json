@@ -4,6 +4,23 @@
     "subtitle": "自動化文件分類和記帳",
     "backToHome": "返回主頁"
   },
+  "tabs": {
+    "whatsapp": {
+      "tab": "WhatsApp 介面"
+    },
+    "reports": {
+      "tab": "每月報表",
+      "title": "每月財務報表",
+      "description": "生成包含收入、支出和預算分析的綜合月度財務報表。",
+      "comingSoon": "AI 每月財務報表生成器 - 即將推出！自動彙整和分析月度財務數據，生成專業報表。"
+    },
+    "internal": {
+      "tab": "內部記帳",
+      "title": "內部記帳系統",
+      "description": "手動輸入和管理財務交易、收據和記帳記錄。",
+      "comingSoon": "內部記帳系統 - 即將推出！管理日常財務交易並維護詳細的記帳記錄。"
+    }
+  },
   "connection": {
     "title": "WhatsApp 連接",
     "subtitle": "連接您的 WhatsApp 以接收和處理文件",

@@ -7,6 +7,7 @@ interface WhatsAppBookkeeperProps {
   hideHeader?: boolean;
 }
 
+type BookkeeperTab = 'whatsapp' | 'reports' | 'internal';
 type ConnectionState = 'connected' | 'disconnected' | 'connecting' | 'qr_ready';
 
 interface Document {
@@ -25,6 +26,7 @@ const API_URL = import.meta.env.VITE_BOOKKEEPER_API_URL || 'http://localhost:300
 
 const WhatsAppBookkeeper: React.FC<WhatsAppBookkeeperProps> = ({ onBack, hideHeader = false }) => {
   const { t } = useTranslation('bookkeeper');
+  const [activeTab, setActiveTab] = useState<BookkeeperTab>('whatsapp');
   const [connectionState, setConnectionState] = useState<ConnectionState>('connecting');
   const [qrCode, setQrCode] = useState<string>('');
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -131,7 +133,7 @@ const WhatsAppBookkeeper: React.FC<WhatsAppBookkeeperProps> = ({ onBack, hideHea
     }
   };
 
-  const renderContent = () => (
+  const renderWhatsAppInterface = () => (
     <div className="space-y-6">
       {/* Connection Status */}
       <div className="bg-white p-6 rounded-xl shadow-md">
@@ -313,11 +315,78 @@ const WhatsAppBookkeeper: React.FC<WhatsAppBookkeeperProps> = ({ onBack, hideHea
     </div>
   );
 
+  const renderMonthlyReports = () => (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.reports.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('tabs.reports.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('tabs.reports.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderInternalBookkeeper = () => (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.internal.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('tabs.internal.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('tabs.internal.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
   if (hideHeader) {
     return (
       <div className="flex flex-col bg-gray-50 h-full">
-        <main className="flex-grow w-full px-2 py-4 sm:px-4 md:px-8 md:py-8">
-          {renderContent()}
+        {/* Navigation Tabs */}
+        <nav className="bg-white shadow">
+          <div className="w-full px-2 sm:px-4">
+            <div className="flex justify-between items-center overflow-x-auto">
+              <div className="flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('whatsapp')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                    activeTab === 'whatsapp'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('tabs.whatsapp.tab')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('reports')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                    activeTab === 'reports'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('tabs.reports.tab')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('internal')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                    activeTab === 'internal'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('tabs.internal.tab')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <main className="flex-grow w-full px-2 py-4 sm:px-4 md:px-8 md:py-8 overflow-y-auto">
+          {activeTab === 'whatsapp' && renderWhatsAppInterface()}
+          {activeTab === 'reports' && renderMonthlyReports()}
+          {activeTab === 'internal' && renderInternalBookkeeper()}
         </main>
       </div>
     );
@@ -347,7 +416,7 @@ const WhatsAppBookkeeper: React.FC<WhatsAppBookkeeperProps> = ({ onBack, hideHea
       </header>
 
       <main className="flex-grow container mx-auto p-4 md:p-8">
-        {renderContent()}
+        {renderWhatsAppInterface()}
       </main>
 
       {/* Footer */}

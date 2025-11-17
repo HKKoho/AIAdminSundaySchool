@@ -4,6 +4,23 @@
     "subtitle": "Automated document classification and bookkeeping",
     "backToHome": "Back to Home"
   },
+  "tabs": {
+    "whatsapp": {
+      "tab": "WhatsApp Interface"
+    },
+    "reports": {
+      "tab": "Monthly Reports",
+      "title": "Monthly Financial Report",
+      "description": "Generate comprehensive monthly financial reports with income, expenses, and budget analysis.",
+      "comingSoon": "AI Monthly Financial Report Generator - Coming Soon! Automatically compile and analyze monthly financial data to produce professional reports."
+    },
+    "internal": {
+      "tab": "Internal Bookkeeper",
+      "title": "Internal Bookkeeper",
+      "description": "Manual entry and management of financial transactions, receipts, and bookkeeping records.",
+      "comingSoon": "Internal Bookkeeper System - Coming Soon! Manage day-to-day financial transactions and maintain detailed bookkeeping records."
+    }
+  },
   "connection": {
     "title": "WhatsApp Connection",
     "subtitle": "Connect your WhatsApp to receive and process documents",
