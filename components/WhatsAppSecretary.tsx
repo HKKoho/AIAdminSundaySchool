@@ -47,7 +47,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack, hideHeade
   const [tasks, setTasks] = useState<Task[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'pastoral' | 'events'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'pastoral' | 'events' | 'status'>('dashboard');
 
   // Dashboard state
   const [report, setReport] = useState<string>('');
@@ -397,6 +397,43 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack, hideHeade
     </div>
   );
 
+  const renderStatus = () => (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="bg-white p-6 rounded-xl shadow-md">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4">{t('status.title')}</h2>
+        <p className="text-gray-600 mb-6">{t('status.description')}</p>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+              <span className="text-gray-700 font-medium">{t('status.connectionStatus')}</span>
+            </div>
+            <span className="text-green-600 font-semibold">{t('status.connected')}</span>
+          </div>
+
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 className="text-lg font-semibold text-blue-900 mb-3">{t('status.interfaceInfo')}</h3>
+            <ul className="space-y-2 text-sm text-blue-800">
+              <li className="flex items-start space-x-2">
+                <span className="text-blue-600 mt-0.5">•</span>
+                <span>{t('status.info1')}</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <span className="text-blue-600 mt-0.5">•</span>
+                <span>{t('status.info2')}</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <span className="text-blue-600 mt-0.5">•</span>
+                <span>{t('status.info3')}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -446,6 +483,16 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack, hideHeade
                 >
                   {t('tabs.events')}
                 </button>
+                <button
+                  onClick={() => setActiveTab('status')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'status'
+                      ? 'border-purple-600 text-purple-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('tabs.status')}
+                </button>
               </div>
               <a
                 href="https://whatsapp-secretary-ai.vercel.app/"
@@ -464,6 +511,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack, hideHeade
           {activeTab === 'dashboard' && renderDashboard()}
           {activeTab === 'pastoral' && renderPastoralAgent()}
           {activeTab === 'events' && renderEventAgent()}
+          {activeTab === 'status' && renderStatus()}
         </main>
       </div>
     );
@@ -534,6 +582,16 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack, hideHeade
             >
               {t('tabs.events')}
             </button>
+            <button
+              onClick={() => setActiveTab('status')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'status'
+                  ? 'border-purple-600 text-purple-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {t('tabs.status')}
+            </button>
           </div>
         </div>
       </nav>
@@ -543,6 +601,7 @@ const WhatsAppSecretary: React.FC<WhatsAppSecretaryProps> = ({ onBack, hideHeade
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'pastoral' && renderPastoralAgent()}
         {activeTab === 'events' && renderEventAgent()}
+        {activeTab === 'status' && renderStatus()}
       </main>
 
       {/* Footer */}
