@@ -1,0 +1,7 @@
+{
+  "name": "WhatsApp Bookkeeper AI",
+  "description": "A single page application that connects to WhatsApp Web to process incoming documents like receipts and invoices, with intelligent classification and storage capabilities.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
