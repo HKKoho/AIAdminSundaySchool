@@ -212,7 +212,7 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader 
     };
 
     const content = (
-        <div className="w-full lg:max-w-7xl lg:mx-auto px-2 py-4 sm:px-4 md:px-8 md:py-8">
+        <div className="w-full px-2 py-4 sm:px-4 md:px-8 md:py-8">
                 <div className="flex justify-between items-center mb-6 flex-wrap gap-4 w-full">
                     <h2 className="text-2xl font-bold text-brand-dark">{t('classArrangement.heading')}</h2>
                     <div className="flex items-center space-x-2">
@@ -362,7 +362,7 @@ const RollCall: React.FC<RollCallProps> = ({ onBack, hideHeader = false }) => {
 
     if (hideHeader) {
         return (
-            <div className="w-full lg:max-w-7xl lg:mx-auto px-2 py-4 sm:px-4 md:px-8 md:py-8">
+            <div className="w-full px-2 py-4 sm:px-4 md:px-8 md:py-8">
                 <RollCallSystem />
             </div>
         );
@@ -579,7 +579,7 @@ const SupportApp: React.FC<SupportAppProps> = ({ onBack, hideHeader = false }) =
 
   if (hideHeader) {
     return (
-      <div className="w-full lg:max-w-7xl lg:mx-auto px-2 py-4 sm:px-4 md:px-8 md:py-8">
+      <div className="w-full px-2 py-4 sm:px-4 md:px-8 md:py-8">
         {renderView()}
       </div>
     );
