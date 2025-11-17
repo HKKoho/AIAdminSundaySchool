@@ -76,6 +76,26 @@
     "lastUpdated": "最後更新",
     "confirmDelete": "您確定要刪除此計畫嗎？此操作無法復原。"
   },
+  "support": {
+    "bible": {
+      "tab": "查經課程",
+      "title": "查經課程設計",
+      "description": "AI 助手協助您設計完整的查經課程與教材。",
+      "comingSoon": "AI 查經課程設計師 - 即將推出！此工具將幫助您創建符合會眾需求的精彩查經教材。"
+    },
+    "outdoor": {
+      "tab": "戶外活動",
+      "title": "戶外活動組織者",
+      "description": "在 AI 協助下規劃和組織教會戶外活動、退修會和團契活動。",
+      "comingSoon": "AI 戶外活動規劃師 - 即將推出！獲得戶外活動、安全規劃和後勤管理的智能建議。"
+    },
+    "gathering": {
+      "tab": "教會聚會",
+      "title": "教會場地聚會",
+      "description": "高效組織和管理教會聚會、活動和場地預約。",
+      "comingSoon": "AI 教會聚會協調員 - 即將推出！透過智能排程和資源分配簡化您的教會活動規劃。"
+    }
+  },
   "classGroupSelector": {
     "welcome": "老師，歡迎您！",
     "selectGroup": "請選擇您的班級群組以開始。"

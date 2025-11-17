@@ -493,6 +493,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
 // ========== Support App Component (Original App) ==========
 
 type SupportView = 'selector' | 'dashboard' | 'builder';
+type SupportTab = 'bible' | 'outdoor' | 'gathering';
 
 interface SupportAppProps {
   onBack: () => void;
@@ -504,6 +505,7 @@ const SupportApp: React.FC<SupportAppProps> = ({ onBack, hideHeader = false }) =
   const [selectedGroup, setSelectedGroup] = useLocalStorage<ClassGroup | null>('selectedClassGroup', null);
   const [view, setView] = useState<SupportView>('selector');
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<SupportTab>('bible');
   
   useEffect(() => {
     if (selectedGroup) {
@@ -562,6 +564,42 @@ const SupportApp: React.FC<SupportAppProps> = ({ onBack, hideHeader = false }) =
     </header>
   );
 
+  const renderBibleStudy = () => (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('support.bible.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('support.bible.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('support.bible.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderOutdoorActivity = () => (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('support.outdoor.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('support.outdoor.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('support.outdoor.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderChurchGathering = () => (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('support.gathering.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('support.gathering.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('support.gathering.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderView = () => {
     if (!selectedGroup || view === 'selector') {
       return <ClassGroupSelector classGroups={CLASS_GROUPS} onSelect={handleGroupSelect} />;
@@ -579,8 +617,53 @@ const SupportApp: React.FC<SupportAppProps> = ({ onBack, hideHeader = false }) =
 
   if (hideHeader) {
     return (
-      <div className="w-full px-2 py-4 sm:px-4 md:px-8 md:py-8">
-        {renderView()}
+      <div className="flex flex-col bg-gray-50 h-full">
+        {/* Navigation Tabs */}
+        <nav className="bg-white shadow">
+          <div className="w-full px-2 sm:px-4">
+            <div className="flex justify-between items-center overflow-x-auto">
+              <div className="flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('bible')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                    activeTab === 'bible'
+                      ? 'border-brand-primary text-brand-primary'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('support.bible.tab')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('outdoor')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                    activeTab === 'outdoor'
+                      ? 'border-brand-primary text-brand-primary'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('support.outdoor.tab')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('gathering')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                    activeTab === 'gathering'
+                      ? 'border-brand-primary text-brand-primary'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('support.gathering.tab')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <main className="flex-grow w-full px-2 py-4 sm:px-4 md:px-8 md:py-8 overflow-y-auto">
+          {activeTab === 'bible' && renderBibleStudy()}
+          {activeTab === 'outdoor' && renderOutdoorActivity()}
+          {activeTab === 'gathering' && renderChurchGathering()}
+        </main>
       </div>
     );
   }
