@@ -1,10 +1,6 @@
 import { MongoClient, Db } from 'mongodb';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MongoDB URI to .env.local');
-}
-
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI || '';
 const options = {};
 
 let client: MongoClient;
@@ -34,6 +30,9 @@ if (process.env.NODE_ENV === 'development') {
 export default clientPromise;
 
 export async function getDatabase(): Promise<Db> {
+  if (!uri) {
+    throw new Error('MONGODB_URI environment variable is not set');
+  }
   const client = await clientPromise;
   return client.db('churchadmin');
 }
