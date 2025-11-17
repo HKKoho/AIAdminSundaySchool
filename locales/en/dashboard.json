@@ -105,6 +105,12 @@
       "title": "Church Premise Gathering",
       "description": "Organize and manage church gatherings, events, and space reservations efficiently.",
       "comingSoon": "AI Church Gathering Coordinator - Coming Soon! Streamline your church event planning with smart scheduling and resource allocation."
+    },
+    "documents": {
+      "tab": "Routine Documents",
+      "title": "Routine Document Production",
+      "description": "Generate and manage routine church documents such as bulletins, newsletters, reports, and announcements with AI assistance.",
+      "comingSoon": "AI Document Production Assistant - Coming Soon! Automate the creation of weekly bulletins, monthly newsletters, and other routine church documents."
     }
   },
   "classGroupSelector": {

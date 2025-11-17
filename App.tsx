@@ -544,7 +544,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSelectView }) => {
 // ========== Support App Component (Original App) ==========
 
 type SupportView = 'selector' | 'dashboard' | 'builder';
-type SupportTab = 'bible' | 'outdoor' | 'gathering';
+type SupportTab = 'bible' | 'outdoor' | 'gathering' | 'documents';
 
 interface SupportAppProps {
   onBack: () => void;
@@ -651,6 +651,18 @@ const SupportApp: React.FC<SupportAppProps> = ({ onBack, hideHeader = false }) =
     </div>
   );
 
+  const renderRoutineDocuments = () => (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('support.documents.title')}</h3>
+        <p className="text-gray-600 mb-4">{t('support.documents.description')}</p>
+        <div className="bg-brand-light p-4 rounded-lg">
+          <p className="text-sm text-gray-700">{t('support.documents.comingSoon')}</p>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderView = () => {
     if (!selectedGroup || view === 'selector') {
       return <ClassGroupSelector classGroups={CLASS_GROUPS} onSelect={handleGroupSelect} />;
@@ -704,6 +716,16 @@ const SupportApp: React.FC<SupportAppProps> = ({ onBack, hideHeader = false }) =
                 >
                   {t('support.gathering.tab')}
                 </button>
+                <button
+                  onClick={() => setActiveTab('documents')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                    activeTab === 'documents'
+                      ? 'border-brand-primary text-brand-primary'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('support.documents.tab')}
+                </button>
               </div>
             </div>
           </div>
@@ -714,6 +736,7 @@ const SupportApp: React.FC<SupportAppProps> = ({ onBack, hideHeader = false }) =
           {activeTab === 'bible' && renderBibleStudy()}
           {activeTab === 'outdoor' && renderOutdoorActivity()}
           {activeTab === 'gathering' && renderChurchGathering()}
+          {activeTab === 'documents' && renderRoutineDocuments()}
         </main>
       </div>
     );
