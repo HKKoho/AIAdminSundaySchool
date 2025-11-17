@@ -91,6 +91,8 @@ const SetupModal: React.FC<SetupModalProps> = ({ classInfo, onSave, onClose }) =
 
 // ========== Class Arrangement Component ==========
 
+type ClassTab = 'quarterly' | 'monthly';
+
 interface ClassArrangementProps {
     onBack: () => void;
     hideHeader?: boolean;
@@ -111,6 +113,7 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassArrangementInfo | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [activeTab, setActiveTab] = useState<ClassTab>('quarterly');
 
     const fieldLabels: Record<keyof Omit<ClassArrangementInfo, 'id'>, string> = {
         time: t('classArrangement.fields.time'),
@@ -211,6 +214,18 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader 
         }
     };
 
+    const renderMonthlyActivities = () => (
+        <div className="space-y-6 px-2 sm:px-4 md:px-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+                <h3 className="text-xl font-bold text-brand-dark mb-4">{t('activities.monthly.title')}</h3>
+                <p className="text-gray-600 mb-4">{t('activities.monthly.description')}</p>
+                <div className="bg-brand-light p-4 rounded-lg">
+                    <p className="text-sm text-gray-700">{t('activities.monthly.comingSoon')}</p>
+                </div>
+            </div>
+        </div>
+    );
+
     const content = (
         <div className="w-full py-4 md:py-8">
                 <div className="flex justify-between items-center mb-6 flex-wrap gap-4 px-2 sm:px-4 md:px-8">
@@ -302,8 +317,44 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader 
 
     if (hideHeader) {
         return (
-            <>
-                {content}
+            <div className="flex flex-col bg-gray-50 h-full">
+                {/* Navigation Tabs */}
+                <nav className="bg-white shadow">
+                    <div className="w-full px-2 sm:px-4">
+                        <div className="flex justify-between items-center overflow-x-auto">
+                            <div className="flex space-x-8">
+                                <button
+                                    onClick={() => setActiveTab('quarterly')}
+                                    className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                                        activeTab === 'quarterly'
+                                            ? 'border-brand-primary text-brand-primary'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    {t('activities.quarterly.tab')}
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('monthly')}
+                                    className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                                        activeTab === 'monthly'
+                                            ? 'border-brand-primary text-brand-primary'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    {t('activities.monthly.tab')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+
+                {/* Main Content */}
+                <main className="flex-grow w-full overflow-y-auto">
+                    {activeTab === 'quarterly' && content}
+                    {activeTab === 'monthly' && renderMonthlyActivities()}
+                </main>
+
+                {/* Modal */}
                 {isModalOpen && editingClass && (
                     <SetupModal
                         classInfo={editingClass}
@@ -311,7 +362,7 @@ const ClassArrangement: React.FC<ClassArrangementProps> = ({ onBack, hideHeader 
                         onClose={handleCloseModal}
                     />
                 )}
-            </>
+            </div>
         );
     }
 

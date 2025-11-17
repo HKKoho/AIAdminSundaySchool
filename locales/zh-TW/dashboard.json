@@ -27,6 +27,17 @@
       "description": "集中式文檔儲存及管理系統。"
     }
   },
+  "activities": {
+    "quarterly": {
+      "tab": "季度課程表"
+    },
+    "monthly": {
+      "tab": "每月教會活動",
+      "title": "本月及下月教會活動",
+      "description": "規劃和管理本月及下月的教會活動。確認後活動將發布到教會網站。",
+      "comingSoon": "每月活動日曆 - 即將推出！此功能將允許您創建、管理並直接發布教會活動到網站。"
+    }
+  },
   "classArrangement": {
     "title": "課程安排",
     "subtitle": "本季",

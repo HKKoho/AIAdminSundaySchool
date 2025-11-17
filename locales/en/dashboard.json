@@ -27,6 +27,17 @@
       "description": "Centralized document storage and management system."
     }
   },
+  "activities": {
+    "quarterly": {
+      "tab": "Quarterly Class Schedule"
+    },
+    "monthly": {
+      "tab": "Monthly Church Activities",
+      "title": "This Month & Next Month Church Activities",
+      "description": "Plan and manage church activities for this month and next month. Activities will be posted to the church website after confirmation.",
+      "comingSoon": "Monthly Activities Calendar - Coming Soon! This feature will allow you to create, manage, and publish church activities directly to your website."
+    }
+  },
   "classArrangement": {
     "title": "Class Arrangement",
     "subtitle": "This Quarter",
