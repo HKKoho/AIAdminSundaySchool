@@ -1,6 +1,7 @@
 import { ClassArrangementInfo } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// Use /api/arrangements-api for arrangements endpoint
+const API_BASE_URL = '/api/arrangements-api';
 
 export interface ArrangementResponse {
   success: boolean;
