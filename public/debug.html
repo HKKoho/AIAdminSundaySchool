@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Debug</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            background: #252526;
+            border-left: 3px solid #007acc;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #1e1e1e;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        .success { border-left-color: #4ec9b0; }
+        .error { border-left-color: #f48771; }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover { background: #005a9e; }
+    </style>
+</head>
+<body>
+    <h1>🔍 API Diagnostics</h1>
+
+    <div class="test">
+        <h3>Test 1: Arrangements API (GET)</h3>
+        <button onclick="testArrangements()">Run Test</button>
+        <div id="test1" class="result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Test 2: MongoDB Test API (GET)</h3>
+        <button onclick="testMongoDB()">Run Test</button>
+        <div id="test2" class="result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Test 3: Network Tab Instructions</h3>
+        <p>1. Open DevTools (F12) → Network tab</p>
+        <p>2. Click "Run Test" on Test 1 above</p>
+        <p>3. Click on the "arrangements-api" request</p>
+        <p>4. Look at the Response tab to see the actual error</p>
+    </div>
+
+    <script>
+        async function testArrangements() {
+            const resultDiv = document.getElementById('test1');
+            resultDiv.textContent = 'Testing...';
+
+            try {
+                const response = await fetch('/api/arrangements-api');
+                const text = await response.text();
+
+                resultDiv.parentElement.className = response.ok ? 'test success' : 'test error';
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    data = text;
+                }
+
+                resultDiv.textContent = `Status: ${response.status} ${response.statusText}\n\n` +
+                    `Response:\n${JSON.stringify(data, null, 2)}`;
+
+            } catch (error) {
+                resultDiv.parentElement.className = 'test error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testMongoDB() {
+            const resultDiv = document.getElementById('test2');
+            resultDiv.textContent = 'Testing...';
+
+            try {
+                const response = await fetch('/api/test-mongodb');
+                const text = await response.text();
+
+                resultDiv.parentElement.className = response.ok ? 'test success' : 'test error';
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    data = text;
+                }
+
+                resultDiv.textContent = `Status: ${response.status} ${response.statusText}\n\n` +
+                    `Response:\n${JSON.stringify(data, null, 2)}`;
+
+            } catch (error) {
+                resultDiv.parentElement.className = 'test error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Auto-run tests on load
+        setTimeout(() => {
+            testArrangements();
+            setTimeout(() => testMongoDB(), 1000);
+        }, 500);
+    </script>
+</body>
+</html>
