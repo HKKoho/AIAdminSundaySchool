@@ -1,6 +1,6 @@
 // Test endpoint to verify MongoDB connection and create sample data
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getDatabase } from '../lib/mongodb';
+import { MongoClient } from 'mongodb';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
@@ -8,7 +8,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST');
 
   try {
-    const db = await getDatabase();
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      return res.status(500).json({
+        success: false,
+        error: 'MONGODB_URI not set',
+        mongodbUri: 'NOT SET'
+      });
+    }
+
+    const client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db('churchadmin');
 
     // Test 1: List all collections
     const collections = await db.listCollections().toArray();
@@ -66,13 +77,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // GET request - just show status
-    return res.status(200).json({
+    const response = {
       success: true,
       message: 'MongoDB connection successful!',
       database: 'churchadmin',
       collections: collectionNames,
       hint: 'Send POST request to this endpoint to create test data'
-    });
+    };
+
+    await client.close();
+    return res.status(200).json(response);
 
   } catch (error) {
     console.error('MongoDB test error:', error);
