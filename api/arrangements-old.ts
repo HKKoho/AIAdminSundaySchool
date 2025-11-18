@@ -63,10 +63,8 @@ export async function updateArrangement(
   id: string,
   arrangement: ClassArrangementInfo
 ): Promise<ArrangementResponse> {
-  let client: MongoClient | null = null;
   try {
-    const { db, client: mongoClient } = await getDatabase();
-    client = mongoClient;
+    const db = await getDatabase();
     const result = await db
       .collection<ClassArrangementInfo>(COLLECTION_NAME)
       .findOneAndUpdate(
@@ -83,17 +81,13 @@ export async function updateArrangement(
   } catch (error) {
     console.error('Error updating arrangement:', error);
     return { success: false, error: 'Failed to update arrangement' };
-  } finally {
-    if (client) await client.close();
   }
 }
 
 // Delete an arrangement
 export async function deleteArrangement(id: string): Promise<ArrangementResponse> {
-  let client: MongoClient | null = null;
   try {
-    const { db, client: mongoClient } = await getDatabase();
-    client = mongoClient;
+    const db = await getDatabase();
     const result = await db
       .collection<ClassArrangementInfo>(COLLECTION_NAME)
       .deleteOne({ id });
@@ -106,8 +100,6 @@ export async function deleteArrangement(id: string): Promise<ArrangementResponse
   } catch (error) {
     console.error('Error deleting arrangement:', error);
     return { success: false, error: 'Failed to delete arrangement' };
-  } finally {
-    if (client) await client.close();
   }
 }
 
@@ -124,11 +116,12 @@ export async function exportArrangementsAsJSON(): Promise<string> {
 export async function importArrangementsFromJSON(
   jsonData: string
 ): Promise<ArrangementResponse> {
-  let client: MongoClient | null = null;
   try {
     const arrangements = JSON.parse(jsonData) as ClassArrangementInfo[];
-    const { db, client: mongoClient } = await getDatabase();
-    client = mongoClient;
+    const db = await getDatabase();
+
+    // Clear existing arrangements (optional - you might want to skip this)
+    // await db.collection(COLLECTION_NAME).deleteMany({});
 
     // Insert all arrangements
     if (arrangements.length > 0) {
@@ -139,7 +132,5 @@ export async function importArrangementsFromJSON(
   } catch (error) {
     console.error('Error importing arrangements:', error);
     return { success: false, error: 'Failed to import arrangements' };
-  } finally {
-    if (client) await client.close();
   }
 }
