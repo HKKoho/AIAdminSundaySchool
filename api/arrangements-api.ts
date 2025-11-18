@@ -1,77 +1,95 @@
 // API endpoints for Vercel Serverless Functions
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import {
-  getAllArrangements,
-  createArrangement,
-  updateArrangement,
-  deleteArrangement,
-  exportArrangementsAsJSON,
-} from './arrangements';
-import { ClassArrangementInfo } from '../types';
+import { MongoClient } from 'mongodb';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  try {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
 
-    if (req.method === 'OPTIONS') {
-      res.status(200).end();
-      return;
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  let client: MongoClient | null = null;
+
+  try {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      return res.status(500).json({
+        success: false,
+        error: 'MONGODB_URI not set'
+      });
     }
+
+    client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db('churchadmin');
+    const collection = db.collection('arrangements');
+
     switch (req.method) {
       case 'GET':
         if (req.query.export === 'true') {
-          const jsonData = await exportArrangementsAsJSON();
+          const arrangements = await collection.find({}).toArray();
+          const jsonData = JSON.stringify(arrangements, null, 2);
           res.setHeader('Content-Type', 'application/json');
           res.setHeader('Content-Disposition', 'attachment; filename=arrangements.json');
           return res.status(200).send(jsonData);
         }
-        const allArrangements = await getAllArrangements();
-        return res.status(200).json(allArrangements);
+        const arrangements = await collection.find({}).toArray();
+        return res.status(200).json({ success: true, data: arrangements });
 
       case 'POST':
-        const newArrangement = req.body as ClassArrangementInfo;
-        const created = await createArrangement(newArrangement);
-        return res.status(created.success ? 201 : 400).json(created);
+        const newArrangement = req.body;
+        await collection.insertOne(newArrangement);
+        return res.status(201).json({ success: true, data: newArrangement });
 
       case 'PUT':
-        const { id, ...updateData } = req.body as ClassArrangementInfo & { id: string };
-        const updated = await updateArrangement(id, updateData as ClassArrangementInfo);
-        return res.status(updated.success ? 200 : 404).json(updated);
+        const { id, ...updateData } = req.body;
+        const result = await collection.findOneAndUpdate(
+          { id },
+          { $set: updateData },
+          { returnDocument: 'after' }
+        );
+        if (!result) {
+          return res.status(404).json({ success: false, error: 'Arrangement not found' });
+        }
+        return res.status(200).json({ success: true, data: result });
 
       case 'DELETE':
         const deleteId = req.query.id as string;
         if (!deleteId) {
           return res.status(400).json({ success: false, error: 'ID is required' });
         }
-        const deleted = await deleteArrangement(deleteId);
-        return res.status(deleted.success ? 200 : 404).json(deleted);
+        const deleteResult = await collection.deleteOne({ id: deleteId });
+        if (deleteResult.deletedCount === 0) {
+          return res.status(404).json({ success: false, error: 'Arrangement not found' });
+        }
+        return res.status(200).json({ success: true });
 
       default:
         res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
         return res.status(405).json({ success: false, error: `Method ${req.method} Not Allowed` });
     }
   } catch (error) {
-    console.error('API Error (caught):', error);
+    console.error('API Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    try {
-      return res.status(500).json({
-        success: false,
-        error: errorMessage,
-        stack: errorStack,
-        type: error?.constructor?.name || 'Unknown'
-      });
-    } catch (jsonError) {
-      // If JSON response fails, return plain text
-      return res.status(500).send(`Error: ${errorMessage}`);
+    return res.status(500).json({
+      success: false,
+      error: errorMessage,
+      stack: errorStack
+    });
+  } finally {
+    if (client) {
+      await client.close();
     }
   }
 }
