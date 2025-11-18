@@ -10,21 +10,20 @@ import {
 import { ClassArrangementInfo } from '../types';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
   try {
+    // Enable CORS
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    );
+
+    if (req.method === 'OPTIONS') {
+      res.status(200).end();
+      return;
+    }
     switch (req.method) {
       case 'GET':
         if (req.query.export === 'true') {
@@ -59,12 +58,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ success: false, error: `Method ${req.method} Not Allowed` });
     }
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('API Error (caught):', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
-    return res.status(500).json({
-      success: false,
-      error: errorMessage,
-      details: process.env.NODE_ENV === 'development' ? error : undefined
-    });
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    try {
+      return res.status(500).json({
+        success: false,
+        error: errorMessage,
+        stack: errorStack,
+        type: error?.constructor?.name || 'Unknown'
+      });
+    } catch (jsonError) {
+      // If JSON response fails, return plain text
+      return res.status(500).send(`Error: ${errorMessage}`);
+    }
   }
 }
