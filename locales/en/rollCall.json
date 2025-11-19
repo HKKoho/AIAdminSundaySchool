@@ -105,7 +105,7 @@
       "filesAnalyzed": "files analyzed",
       "chat": {
         "title": "AI Analysis Assistant",
-        "welcome": "Welcome! Upload multiple CSV files from your past roll calls to analyze attendance patterns. I can help identify trends, member engagement patterns, and provide insights.",
+        "welcome": "Welcome! Upload multiple CSV files from your past roll calls to analyze attendance patterns. I can help identify trends, member engagement patterns, and provide insights.\n\n**February 2025 Demo Summary:**\n• Feb 2: 167 members, 111 present (66.5%)\n• Feb 9: 167 members, 111 present (66.5%)\n• Feb 16: 172 members, 102 present (59.3%)\n• Feb 23: 176 members, 101 present (57.4%)\n\n**Key Insights:** Attendance decreased from 66.5% to 57.4% by month end. Member list grew from 167 to 176.",
         "placeholder": "Ask questions about your attendance data...",
         "filesLoaded": "Loaded {{count}} files with data for {{members}} members"
       },
@@ -186,7 +186,7 @@
     "memberList": "Member Participation List",
     "name": "Name",
     "attended": "Attended",
-    "total": "Total",
+    "total": "Times on List",
     "rate": "Rate",
     "lastAttended": "Last Attended",
     "csvFiles": "CSV Files in Database"
