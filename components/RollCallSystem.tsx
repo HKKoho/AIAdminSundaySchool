@@ -208,6 +208,20 @@ const RollCallSystem: React.FC = () => {
     };
   }, [isTimerRunning, countdown]);
 
+  // Fetch participation data when switching to worship/lordsupper/calendar tabs
+  useEffect(() => {
+    const eventTypeMap: Record<string, 'worship' | 'lordsupper' | 'calendar'> = {
+      'worship': 'worship',
+      'lordsupper': 'lordsupper',
+      'calendar': 'calendar'
+    };
+
+    const eventType = eventTypeMap[activeTab];
+    if (eventType && !participationData[eventType] && !participationLoading[eventType]) {
+      fetchParticipationData(eventType);
+    }
+  }, [activeTab, participationData, participationLoading]);
+
   // Format countdown time
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -800,13 +814,6 @@ Provide brief insights for church leadership including any punctuality observati
     const data = participationData[eventType];
     const loading = participationLoading[eventType];
     const insights = aiInsights[eventType];
-
-    // Fetch data on first render
-    useEffect(() => {
-      if (!data && !loading) {
-        fetchParticipationData(eventType);
-      }
-    }, [eventType]);
 
     return (
       <div className="p-4 max-w-6xl mx-auto">
