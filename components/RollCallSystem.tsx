@@ -828,7 +828,7 @@ Provide brief insights for church leadership including any punctuality observati
           </div>
         ) : !data || data.participationList.length === 0 ? (
           <div className="bg-white p-6 rounded-lg shadow text-center">
-            <p className="text-gray-500">{t('records.noRecords')}</p>
+            <p className="text-gray-500">{t('messages.waitForData')}</p>
           </div>
         ) : (
           <div className="space-y-6">

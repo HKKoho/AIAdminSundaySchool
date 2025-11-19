@@ -188,7 +188,8 @@
     "confirmReset": "請確保您已儲存檔案後再重置。\n\n您確定要繼續重置嗎？",
     "confirmDelete": "確定要刪除 {{name}} 嗎？",
     "savedToDatabase": "出席記錄已成功儲存！",
-    "saveToDbFailed": "儲存到資料庫失敗。記錄已儲存到本地。"
+    "saveToDbFailed": "儲存到資料庫失敗。記錄已儲存到本地。",
+    "waitForData": "等待資料以提供結果"
   },
   "status": {
     "present": "已到",

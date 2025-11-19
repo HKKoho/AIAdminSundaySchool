@@ -188,7 +188,8 @@
     "confirmReset": "Please make sure you have saved the file before resetting.\n\nAre you sure you want to continue?",
     "confirmDelete": "Are you sure you want to delete {{name}}?",
     "savedToDatabase": "Attendance record saved successfully!",
-    "saveToDbFailed": "Failed to save to database. Record saved locally."
+    "saveToDbFailed": "Failed to save to database. Record saved locally.",
+    "waitForData": "Wait for data to provide result"
   },
   "status": {
     "present": "Present",
