@@ -1,9 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import Card from './common/Card';
 import Button from './common/Button';
 import { Alert, AlertDescription } from './common/Alert';
+
+type AnalysisCategory = 'worship' | 'lordsupper' | 'calendar';
+
+interface AnalysisChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+interface AnalysisSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  analysisType: string;
+}
 
 interface Member {
   id: string;
@@ -21,7 +35,7 @@ interface AttendanceState {
 
 const STORAGE_KEY = 'rollCallSystemTemp';
 
-type RollCallTab = 'rollcall' | 'worship' | 'lordsupper' | 'calendar' | 'analysis' | 'survey';
+type RollCallTab = 'rollcall' | 'worship' | 'lordsupper' | 'calendar' | 'analysis' | 'analysepast' | 'survey';
 type EventType = 'worship' | 'lordsupper' | 'christmaseve' | 'easterfriday' | 'eastersunday';
 
 const RollCallSystem: React.FC = () => {
@@ -48,6 +62,44 @@ const RollCallSystem: React.FC = () => {
   const [showRecoveryAlert, setShowRecoveryAlert] = useState(false);
   const [recoveryData, setRecoveryData] = useState<any>(null);
   const [savedRecords, setSavedRecords] = useState<any[]>([]);
+
+  // Analysis tab state
+  const [analysisCategory, setAnalysisCategory] = useState<AnalysisCategory>('worship');
+  const [analysisCsvFile, setAnalysisCsvFile] = useState<File | null>(null);
+  const [analysisCsvData, setAnalysisCsvData] = useState<string>('');
+  const [analysisIsLoading, setAnalysisIsLoading] = useState(false);
+  const [analysisChatHistory, setAnalysisChatHistory] = useState<AnalysisChatMessage[]>([]);
+  const [analysisChatInput, setAnalysisChatInput] = useState('');
+  const [analysisSuggestion, setAnalysisSuggestion] = useState<AnalysisSuggestion | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<string>('');
+  const analysisFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Participation list state for Worship, Lord's Supper, Calendar tabs
+  const [participationData, setParticipationData] = useState<{
+    worship: any;
+    lordsupper: any;
+    calendar: any;
+  }>({ worship: null, lordsupper: null, calendar: null });
+  const [participationLoading, setParticipationLoading] = useState<{
+    worship: boolean;
+    lordsupper: boolean;
+    calendar: boolean;
+  }>({ worship: false, lordsupper: false, calendar: false });
+  const [aiInsights, setAiInsights] = useState<{
+    worship: string;
+    lordsupper: string;
+    calendar: string;
+  }>({ worship: '', lordsupper: '', calendar: '' });
+
+  // Analyse Past Data tab state
+  const [pastDataFiles, setPastDataFiles] = useState<File[]>([]);
+  const [pastDataCsvContents, setPastDataCsvContents] = useState<string[]>([]);
+  const [pastDataIsLoading, setPastDataIsLoading] = useState(false);
+  const [pastDataChatHistory, setPastDataChatHistory] = useState<AnalysisChatMessage[]>([]);
+  const [pastDataChatInput, setPastDataChatInput] = useState('');
+  const [pastDataParticipation, setPastDataParticipation] = useState<any>(null);
+  const [pastDataAiInsights, setPastDataAiInsights] = useState('');
+  const pastDataFileInputRef = useRef<HTMLInputElement>(null);
 
   // Load saved data on component mount
   useEffect(() => {
@@ -255,21 +307,51 @@ const RollCallSystem: React.FC = () => {
     }
   };
 
+  // Generate CSV content for storage
+  const generateCsvContent = () => {
+    const headers = [t('csvHeaders.name'), t('csvHeaders.status'), t('csvHeaders.time')];
+    const rows = members.map(member => [
+      member.name,
+      attendance[member.id]?.present ? t('csvHeaders.present') : t('csvHeaders.absent'),
+      attendance[member.id]?.timestamp || ''
+    ]);
+    return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+  };
+
+  // Generate file name based on event type and date
+  const generateFileName = (eventType: EventType, date: string) => {
+    const eventTypeNames: Record<EventType, string> = {
+      worship: 'Worship',
+      lordsupper: 'LordSupper',
+      christmaseve: 'ChurchCalendar_ChristmasEve',
+      easterfriday: 'ChurchCalendar_EasterFriday',
+      eastersunday: 'ChurchCalendar_EasterSunday'
+    };
+    return `${eventTypeNames[eventType]}_${date}.csv`;
+  };
+
   // Save to database
   const saveToDatabase = async () => {
     try {
+      const eventDate = new Date().toISOString().split('T')[0];
+      const csvContent = generateCsvContent();
+      const fileName = generateFileName(eventType, eventDate);
+
       const attendanceData = {
         eventType,
-        eventDate: new Date().toISOString().split('T')[0],
+        eventDate,
+        fileName,
+        csvContent,
         members: members.map(member => ({
           id: member.id,
           name: member.name,
           present: attendance[member.id]?.present || false,
           timestamp: attendance[member.id]?.timestamp || new Date().toISOString()
-        }))
+        })),
+        createdAt: new Date().toISOString()
       };
 
-      const response = await fetch('/api/attendance/save', {
+      const response = await fetch('/api/attendance?action=save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -626,32 +708,1049 @@ const RollCallSystem: React.FC = () => {
     </div>
   );
 
-  const renderWorship = () => renderAttendanceRecords(
-    savedRecords.filter(r => r.eventType === 'worship'),
-    t('tabs.worship.title')
-  );
+  // Fetch participation data and AI insights
+  const fetchParticipationData = async (eventType: 'worship' | 'lordsupper' | 'calendar') => {
+    setParticipationLoading(prev => ({ ...prev, [eventType]: true }));
 
-  const renderLordSupper = () => renderAttendanceRecords(
-    savedRecords.filter(r => r.eventType === 'lordsupper'),
-    t('tabs.lordsupper.title')
-  );
+    try {
+      // Fetch participation list from API
+      const response = await fetch(`/api/attendance?action=participation-list&eventType=${eventType}`);
+      const result = await response.json();
 
-  const renderCalendar = () => renderAttendanceRecords(
-    savedRecords.filter(r => ['christmaseve', 'easterfriday', 'eastersunday'].includes(r.eventType)),
-    t('tabs.calendar.title')
-  );
+      if (result.success) {
+        setParticipationData(prev => ({ ...prev, [eventType]: result.data }));
 
-  const renderAnalysis = () => (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.analysis.title')}</h3>
-        <p className="text-gray-600 mb-4">{t('tabs.analysis.description')}</p>
-        <div className="bg-brand-light p-4 rounded-lg">
-          <p className="text-sm text-gray-700">{t('tabs.analysis.comingSoon')}</p>
+        // Generate AI insights if we have data
+        if (result.data.participationList.length > 0) {
+          await generateAiInsights(eventType, result.data);
+        }
+      }
+    } catch (error) {
+      console.error(`Error fetching ${eventType} participation:`, error);
+    } finally {
+      setParticipationLoading(prev => ({ ...prev, [eventType]: false }));
+    }
+  };
+
+  // Generate AI insights for participation data
+  const generateAiInsights = async (eventType: string, data: any) => {
+    try {
+      const participationSummary = data.participationList
+        .slice(0, 20)
+        .map((p: any) => `${p.name}: ${p.participationRate}% (${p.attended}/${p.totalEvents})`)
+        .join('\n');
+
+      const systemPrompt = `You are a church administrator AI assistant. Analyze the participation data and provide brief, actionable insights. Focus on:
+1. Overall engagement trends
+2. Members who may need pastoral attention (low attendance)
+3. Members with excellent engagement (potential leaders)
+Keep your response concise (3-5 bullet points).`;
+
+      const userPrompt = `Analyze this ${eventType} participation data (last 3 months):
+
+Total Records: ${data.totalRecords}
+Members: ${data.participationList.length}
+
+Top participation rates:
+${participationSummary}
+
+Provide brief insights for church leadership.`;
+
+      const response = await fetch('/api/unified', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          maxTokens: 500,
+        }),
+      });
+
+      if (response.ok) {
+        const aiResult = await response.json();
+        const insights = aiResult.choices?.[0]?.message?.content || '';
+        setAiInsights(prev => ({ ...prev, [eventType]: insights }));
+      }
+    } catch (error) {
+      console.error(`Error generating AI insights for ${eventType}:`, error);
+    }
+  };
+
+  // Render participation list component
+  const renderParticipationList = (
+    eventType: 'worship' | 'lordsupper' | 'calendar',
+    title: string
+  ) => {
+    const data = participationData[eventType];
+    const loading = participationLoading[eventType];
+    const insights = aiInsights[eventType];
+
+    // Fetch data on first render
+    useEffect(() => {
+      if (!data && !loading) {
+        fetchParticipationData(eventType);
+      }
+    }, [eventType]);
+
+    return (
+      <div className="p-4 max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-brand-dark">{title}</h2>
+          <Button
+            onClick={() => fetchParticipationData(eventType)}
+            variant="ghost"
+            disabled={loading}
+          >
+            {loading ? t('tabs.analysis.analyzing') : t('participation.refresh')}
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="bg-white p-6 rounded-lg shadow text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mb-4"></div>
+            <p className="text-gray-500">{t('participation.loading')}</p>
+          </div>
+        ) : !data || data.participationList.length === 0 ? (
+          <div className="bg-white p-6 rounded-lg shadow text-center">
+            <p className="text-gray-500">{t('records.noRecords')}</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* AI Insights Card */}
+            {insights && (
+              <Card className="p-4 bg-blue-50 border-blue-200">
+                <h3 className="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  {t('participation.aiInsights')}
+                </h3>
+                <div className="text-sm text-blue-900 whitespace-pre-wrap">{insights}</div>
+              </Card>
+            )}
+
+            {/* Summary Stats */}
+            <Card className="p-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-brand-primary">{data.totalRecords}</p>
+                  <p className="text-sm text-gray-500">{t('participation.totalEvents')}</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-brand-primary">{data.participationList.length}</p>
+                  <p className="text-sm text-gray-500">{t('participation.totalMembers')}</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-brand-primary">
+                    {data.participationList.length > 0
+                      ? Math.round(data.participationList.reduce((acc: number, p: any) => acc + p.participationRate, 0) / data.participationList.length)
+                      : 0}%
+                  </p>
+                  <p className="text-sm text-gray-500">{t('participation.avgRate')}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Participation List Table */}
+            <Card className="overflow-hidden">
+              <div className="p-4 border-b bg-gray-50">
+                <h3 className="font-semibold text-brand-dark">{t('participation.memberList')}</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t('participation.name')}</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">{t('participation.attended')}</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">{t('participation.total')}</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">{t('participation.rate')}</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">{t('participation.lastAttended')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {data.participationList.map((member: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{member.name}</td>
+                        <td className="px-4 py-3 text-sm text-center text-gray-600">{member.attended}</td>
+                        <td className="px-4 py-3 text-sm text-center text-gray-600">{member.totalEvents}</td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            member.participationRate >= 80 ? 'bg-green-100 text-green-800' :
+                            member.participationRate >= 50 ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {member.participationRate}%
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-center text-gray-600">
+                          {member.lastAttended ? new Date(member.lastAttended).toLocaleDateString() : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+
+            {/* CSV Files List */}
+            {data.csvFiles && data.csvFiles.length > 0 && (
+              <Card className="p-4">
+                <h3 className="font-semibold text-brand-dark mb-3">{t('participation.csvFiles')}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {data.csvFiles.map((file: any, idx: number) => (
+                    <div key={idx} className="p-2 bg-gray-50 rounded text-sm">
+                      <span className="font-medium">{file.fileName}</span>
+                      <span className="text-gray-500 ml-2">({new Date(file.eventDate).toLocaleDateString()})</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderWorship = () => renderParticipationList('worship', t('tabs.worship.title'));
+
+  const renderLordSupper = () => renderParticipationList('lordsupper', t('tabs.lordsupper.title'));
+
+  const renderCalendar = () => renderParticipationList('calendar', t('tabs.calendar.title'));
+
+  const renderAnalysis = () => {
+    const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (!file.name.endsWith('.csv')) {
+        alert(t('tabs.analysis.errors.invalidFormat'));
+        return;
+      }
+
+      setAnalysisCsvFile(file);
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const csvContent = event.target?.result as string;
+        if (!csvContent || csvContent.trim().length === 0) {
+          alert(t('tabs.analysis.errors.emptyFile'));
+          return;
+        }
+        setAnalysisCsvData(csvContent);
+
+        // Add welcome message with file info
+        const lines = csvContent.split('\n').filter(line => line.trim());
+        const rowCount = lines.length - 1; // Exclude header
+        setAnalysisChatHistory(prev => [...prev, {
+          role: 'system',
+          content: `${t('tabs.analysis.chat.fileLoaded')}\n\n- File: ${file.name}\n- Rows: ${rowCount}\n- Category: ${t(`tabs.analysis.categories.${analysisCategory}`)}`
+        }]);
+      };
+      reader.readAsText(file);
+    };
+
+    const handleSuggestAnalysis = async () => {
+      if (!analysisCsvData) {
+        alert(t('tabs.analysis.errors.noFile'));
+        return;
+      }
+
+      setAnalysisIsLoading(true);
+      setAnalysisChatHistory(prev => [...prev, {
+        role: 'system',
+        content: t('tabs.analysis.chat.suggestingAnalysis')
+      }]);
+
+      try {
+        const systemPrompt = `You are an expert data analyst specializing in church attendance analysis. You use PandasAI and statistical methods to analyze attendance patterns. Based on the CSV data provided, suggest ONE specific analysis that would be valuable for church administrators.
+
+For the "${analysisCategory}" category, consider analyses like:
+- Attendance trends over time
+- Member engagement patterns
+- Seasonal patterns
+- Drop-off analysis
+- Growth rates
+- Correlations between events
+
+Provide your response in this JSON format:
+{
+  "title": "Analysis title",
+  "description": "Brief description of what this analysis will reveal and why it's useful",
+  "analysisType": "one of: attendanceTrends, memberEngagement, seasonalPatterns, dropoffAnalysis, growthRate, comparisonAnalysis, correlationAnalysis, predictiveAnalysis"
+}`;
+
+        const userPrompt = `Here is the CSV data for ${t(`tabs.analysis.categories.${analysisCategory}`)}:\n\n${analysisCsvData.substring(0, 2000)}${analysisCsvData.length > 2000 ? '\n...(truncated for preview)' : ''}
+
+Please suggest ONE valuable analysis for this church attendance data.`;
+
+        const response = await fetch('/api/unified', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.7,
+            maxTokens: 1000,
+          }),
+        });
+
+        if (!response.ok) throw new Error('Failed to get analysis suggestion');
+
+        const data = await response.json();
+        const suggestionText = data.choices?.[0]?.message?.content || '';
+
+        // Parse the JSON response
+        try {
+          const jsonMatch = suggestionText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const suggestion = JSON.parse(jsonMatch[0]);
+            setAnalysisSuggestion({
+              id: `suggestion-${Date.now()}`,
+              title: suggestion.title,
+              description: suggestion.description,
+              analysisType: suggestion.analysisType
+            });
+
+            setAnalysisChatHistory(prev => [...prev, {
+              role: 'assistant',
+              content: `**${t('tabs.analysis.suggestions.title')}**\n\n**${suggestion.title}**\n\n${suggestion.description}\n\nWould you like me to perform this analysis?`
+            }]);
+          }
+        } catch (parseError) {
+          setAnalysisChatHistory(prev => [...prev, {
+            role: 'assistant',
+            content: suggestionText
+          }]);
+        }
+      } catch (error) {
+        console.error('Error suggesting analysis:', error);
+        setAnalysisChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: t('tabs.analysis.errors.analysisError')
+        }]);
+      } finally {
+        setAnalysisIsLoading(false);
+      }
+    };
+
+    const handlePerformAnalysis = async (analysisType?: string) => {
+      if (!analysisCsvData) {
+        alert(t('tabs.analysis.errors.noFile'));
+        return;
+      }
+
+      setAnalysisIsLoading(true);
+      setAnalysisChatHistory(prev => [...prev, {
+        role: 'system',
+        content: t('tabs.analysis.chat.performingAnalysis')
+      }]);
+
+      try {
+        const typeToPerform = analysisType || analysisSuggestion?.analysisType || 'attendanceTrends';
+
+        const systemPrompt = `You are an expert data analyst using PandasAI and statistical methods. Perform the requested analysis on the church attendance data and provide:
+
+1. **Key Insights**: 3-5 specific findings from the data
+2. **Statistics**: Relevant numbers, percentages, averages
+3. **Recommendations**: 2-3 actionable suggestions for church administrators
+4. **Visualization Description**: Describe what chart/graph would best represent this data
+
+Be specific with numbers and dates from the actual data. Use markdown formatting for clarity.`;
+
+        const userPrompt = `Perform a ${t(`tabs.analysis.possibleAnalyses.${typeToPerform}` as any)} analysis on this ${t(`tabs.analysis.categories.${analysisCategory}`)} data:
+
+${analysisCsvData}
+
+Provide detailed insights, statistics, and recommendations.`;
+
+        const response = await fetch('/api/unified', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.5,
+            maxTokens: 2000,
+          }),
+        });
+
+        if (!response.ok) throw new Error('Failed to perform analysis');
+
+        const data = await response.json();
+        const results = data.choices?.[0]?.message?.content || '';
+
+        setAnalysisResults(results);
+        setAnalysisChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: results
+        }]);
+        setAnalysisSuggestion(null);
+      } catch (error) {
+        console.error('Error performing analysis:', error);
+        setAnalysisChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: t('tabs.analysis.errors.analysisError')
+        }]);
+      } finally {
+        setAnalysisIsLoading(false);
+      }
+    };
+
+    const handleChatSubmit = async () => {
+      if (!analysisChatInput.trim()) return;
+
+      const userMessage = analysisChatInput.trim();
+      setAnalysisChatInput('');
+      setAnalysisChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+      setAnalysisIsLoading(true);
+
+      try {
+        const systemPrompt = `You are an AI assistant helping analyze church attendance data. You use PandasAI and OpenAI to provide insights. The user has uploaded CSV data for "${t(`tabs.analysis.categories.${analysisCategory}`)}" analysis.
+
+${analysisCsvData ? `Current CSV data preview:\n${analysisCsvData.substring(0, 1500)}` : 'No data uploaded yet.'}
+
+Help the user understand their data, suggest analyses, or answer questions about attendance patterns. Be specific and helpful.`;
+
+        const conversationHistory = analysisChatHistory.slice(-10).map(msg => ({
+          role: msg.role === 'system' ? 'assistant' : msg.role,
+          content: msg.content
+        }));
+
+        const response = await fetch('/api/unified', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...conversationHistory,
+              { role: 'user', content: userMessage }
+            ],
+            temperature: 0.7,
+            maxTokens: 1500,
+          }),
+        });
+
+        if (!response.ok) throw new Error('Failed to get response');
+
+        const data = await response.json();
+        const reply = data.choices?.[0]?.message?.content || '';
+
+        setAnalysisChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: reply
+        }]);
+      } catch (error) {
+        console.error('Error in chat:', error);
+        setAnalysisChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: t('tabs.analysis.errors.analysisError')
+        }]);
+      } finally {
+        setAnalysisIsLoading(false);
+      }
+    };
+
+    const handleClearChat = () => {
+      setAnalysisChatHistory([]);
+      setAnalysisSuggestion(null);
+      setAnalysisResults('');
+    };
+
+    const handleExportResults = () => {
+      if (!analysisResults) return;
+
+      const blob = new Blob([analysisResults], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `analysis-${analysisCategory}-${new Date().toISOString().split('T')[0]}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    return (
+      <div className="p-4 max-w-6xl mx-auto">
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.analysis.title')}</h3>
+          <p className="text-gray-600 mb-6">{t('tabs.analysis.description')}</p>
+
+          {/* Category Selection and File Upload */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('tabs.analysis.selectCategory')}
+              </label>
+              <select
+                value={analysisCategory}
+                onChange={(e) => setAnalysisCategory(e.target.value as AnalysisCategory)}
+                className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500"
+              >
+                <option value="worship">{t('tabs.analysis.categories.worship')}</option>
+                <option value="lordsupper">{t('tabs.analysis.categories.lordsupper')}</option>
+                <option value="calendar">{t('tabs.analysis.categories.calendar')}</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('tabs.analysis.uploadCsv')}
+              </label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="file"
+                  ref={analysisFileInputRef}
+                  accept=".csv"
+                  onChange={handleCsvUpload}
+                  className="hidden"
+                />
+                <Button
+                  onClick={() => analysisFileInputRef.current?.click()}
+                  variant="ghost"
+                  className="flex-1"
+                >
+                  {analysisCsvFile ? analysisCsvFile.name : t('tabs.analysis.noFileSelected')}
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{t('tabs.analysis.csvOnly')}</p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <Button
+              onClick={handleSuggestAnalysis}
+              disabled={!analysisCsvData || analysisIsLoading}
+            >
+              {t('tabs.analysis.suggestAnalysis')}
+            </Button>
+            {analysisSuggestion && (
+              <Button
+                onClick={() => handlePerformAnalysis()}
+                disabled={analysisIsLoading}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {t('tabs.analysis.suggestions.approve')}
+              </Button>
+            )}
+            <Button
+              onClick={handleClearChat}
+              variant="ghost"
+            >
+              {t('tabs.analysis.clearChat')}
+            </Button>
+            {analysisResults && (
+              <Button
+                onClick={handleExportResults}
+                variant="ghost"
+              >
+                {t('tabs.analysis.exportResults')}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Chat Interface */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-4 border-b">
+            <h4 className="font-semibold text-brand-dark">{t('tabs.analysis.chat.title')}</h4>
+          </div>
+
+          {/* Chat History */}
+          <div className="h-96 overflow-y-auto p-4 space-y-4">
+            {analysisChatHistory.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <p>{t('tabs.analysis.chat.welcome')}</p>
+              </div>
+            ) : (
+              analysisChatHistory.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`p-3 rounded-lg ${
+                    msg.role === 'user'
+                      ? 'bg-blue-100 ml-8'
+                      : msg.role === 'system'
+                      ? 'bg-gray-100'
+                      : 'bg-green-50 mr-8'
+                  }`}
+                >
+                  <div className="text-xs font-medium text-gray-500 mb-1">
+                    {msg.role === 'user' ? 'You' : msg.role === 'system' ? 'System' : 'AI Assistant'}
+                  </div>
+                  <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+                </div>
+              ))
+            )}
+            {analysisIsLoading && (
+              <div className="text-center py-4">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                <p className="text-sm text-gray-500 mt-2">{t('tabs.analysis.analyzing')}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Chat Input */}
+          <div className="p-4 border-t">
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={analysisChatInput}
+                onChange={(e) => setAnalysisChatInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleChatSubmit()}
+                placeholder={t('tabs.analysis.chatPlaceholder')}
+                className="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                disabled={analysisIsLoading}
+              />
+              <Button
+                onClick={handleChatSubmit}
+                disabled={!analysisChatInput.trim() || analysisIsLoading}
+              >
+                {t('tabs.analysis.sendMessage')}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const renderAnalysePastData = () => {
+    // Handle multiple CSV file upload
+    const handleMultiFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length === 0) return;
+
+      const validFiles = files.filter(f => f.name.endsWith('.csv'));
+      if (validFiles.length === 0) {
+        alert(t('tabs.analysepast.errors.invalidFormat'));
+        return;
+      }
+
+      setPastDataFiles(prev => [...prev, ...validFiles]);
+      setPastDataIsLoading(true);
+
+      try {
+        const newContents: string[] = [];
+        for (const file of validFiles) {
+          const content = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target?.result as string);
+            reader.readAsText(file);
+          });
+          newContents.push(content);
+        }
+
+        setPastDataCsvContents(prev => [...prev, ...newContents]);
+
+        // Parse and aggregate participation data
+        const allData = [...pastDataCsvContents, ...newContents];
+        const participation = parseMultipleCsvFiles(allData);
+        setPastDataParticipation(participation);
+
+        // Add system message
+        setPastDataChatHistory(prev => [...prev, {
+          role: 'system',
+          content: t('tabs.analysepast.chat.filesLoaded', {
+            count: validFiles.length,
+            total: pastDataFiles.length + validFiles.length,
+            members: participation.participationList.length
+          })
+        }]);
+
+        // Generate AI insights
+        await generatePastDataInsights(participation);
+      } catch (error) {
+        console.error('Error processing files:', error);
+      } finally {
+        setPastDataIsLoading(false);
+      }
+    };
+
+    // Parse multiple CSV files and aggregate participation
+    const parseMultipleCsvFiles = (csvContents: string[]) => {
+      const memberMap = new Map<string, { name: string; totalEvents: number; attended: number; dates: string[] }>();
+
+      csvContents.forEach((content, fileIndex) => {
+        const lines = content.split('\n').filter(line => line.trim());
+        if (lines.length < 2) return;
+
+        // Skip header row
+        for (let i = 1; i < lines.length; i++) {
+          const columns = lines[i].split(',');
+          if (columns.length < 2) continue;
+
+          const name = columns[0].trim();
+          const status = columns[1].trim().toLowerCase();
+          const isPresent = status.includes('present') || status.includes('出席') || status === 'yes' || status === '1';
+
+          const existing = memberMap.get(name) || {
+            name,
+            totalEvents: 0,
+            attended: 0,
+            dates: []
+          };
+
+          existing.totalEvents++;
+          if (isPresent) {
+            existing.attended++;
+            existing.dates.push(`File ${fileIndex + 1}`);
+          }
+
+          memberMap.set(name, existing);
+        }
+      });
+
+      const participationList = Array.from(memberMap.values()).map(member => ({
+        ...member,
+        participationRate: member.totalEvents > 0
+          ? Math.round((member.attended / member.totalEvents) * 100)
+          : 0
+      }));
+
+      participationList.sort((a, b) => b.participationRate - a.participationRate);
+
+      return {
+        totalFiles: csvContents.length,
+        participationList
+      };
+    };
+
+    // Generate AI insights for past data
+    const generatePastDataInsights = async (data: any) => {
+      if (!data || data.participationList.length === 0) return;
+
+      try {
+        const participationSummary = data.participationList
+          .slice(0, 20)
+          .map((p: any) => `${p.name}: ${p.participationRate}% (${p.attended}/${p.totalEvents})`)
+          .join('\n');
+
+        const systemPrompt = `You are a church administrator AI assistant using PandasAI to analyze historical attendance data. Provide actionable insights based on the aggregated participation data from multiple CSV files. Focus on:
+1. Overall engagement patterns
+2. Members needing follow-up (low attendance)
+3. Highly engaged members (potential leaders)
+4. Trends and recommendations
+Keep response concise (4-6 bullet points).`;
+
+        const userPrompt = `Analyze this aggregated participation data from ${data.totalFiles} CSV files:
+
+Total Members: ${data.participationList.length}
+
+Participation rates:
+${participationSummary}
+
+Provide insights for church leadership.`;
+
+        const response = await fetch('/api/unified', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.7,
+            maxTokens: 600,
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const insights = result.choices?.[0]?.message?.content || '';
+          setPastDataAiInsights(insights);
+        }
+      } catch (error) {
+        console.error('Error generating insights:', error);
+      }
+    };
+
+    // Handle chat submission
+    const handlePastDataChatSubmit = async () => {
+      if (!pastDataChatInput.trim()) return;
+
+      const userMessage = pastDataChatInput.trim();
+      setPastDataChatInput('');
+      setPastDataChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+      setPastDataIsLoading(true);
+
+      try {
+        const csvPreview = pastDataCsvContents.slice(0, 3).map((content, i) =>
+          `File ${i + 1}:\n${content.substring(0, 500)}`
+        ).join('\n\n');
+
+        const systemPrompt = `You are an AI assistant using PandasAI and OpenAI to analyze church attendance data. The user has uploaded ${pastDataFiles.length} CSV files with roll call data.
+
+Data preview:
+${csvPreview}
+
+${pastDataParticipation ? `
+Aggregated stats:
+- Total members: ${pastDataParticipation.participationList.length}
+- Files analyzed: ${pastDataParticipation.totalFiles}
+` : ''}
+
+Help analyze patterns, answer questions, and provide recommendations.`;
+
+        const conversationHistory = pastDataChatHistory.slice(-10).map(msg => ({
+          role: msg.role === 'system' ? 'assistant' : msg.role,
+          content: msg.content
+        }));
+
+        const response = await fetch('/api/unified', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...conversationHistory,
+              { role: 'user', content: userMessage }
+            ],
+            temperature: 0.7,
+            maxTokens: 1500,
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const reply = result.choices?.[0]?.message?.content || '';
+          setPastDataChatHistory(prev => [...prev, { role: 'assistant', content: reply }]);
+        }
+      } catch (error) {
+        console.error('Error in chat:', error);
+        setPastDataChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: t('tabs.analysepast.errors.analysisError')
+        }]);
+      } finally {
+        setPastDataIsLoading(false);
+      }
+    };
+
+    // Clear all data
+    const handleClearAll = () => {
+      setPastDataFiles([]);
+      setPastDataCsvContents([]);
+      setPastDataChatHistory([]);
+      setPastDataParticipation(null);
+      setPastDataAiInsights('');
+    };
+
+    // Remove a specific file
+    const handleRemoveFile = (index: number) => {
+      setPastDataFiles(prev => prev.filter((_, i) => i !== index));
+      setPastDataCsvContents(prev => prev.filter((_, i) => i !== index));
+
+      // Recalculate participation
+      const remaining = pastDataCsvContents.filter((_, i) => i !== index);
+      if (remaining.length > 0) {
+        const participation = parseMultipleCsvFiles(remaining);
+        setPastDataParticipation(participation);
+      } else {
+        setPastDataParticipation(null);
+        setPastDataAiInsights('');
+      }
+    };
+
+    return (
+      <div className="p-4 max-w-6xl mx-auto">
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.analysepast.title')}</h3>
+          <p className="text-gray-600 mb-6">{t('tabs.analysepast.description')}</p>
+
+          {/* File Upload Section */}
+          <div className="mb-6">
+            <div className="flex items-center gap-4 mb-4">
+              <input
+                type="file"
+                ref={pastDataFileInputRef}
+                accept=".csv"
+                multiple
+                onChange={handleMultiFileUpload}
+                className="hidden"
+              />
+              <Button
+                onClick={() => pastDataFileInputRef.current?.click()}
+                disabled={pastDataIsLoading}
+              >
+                {t('tabs.analysepast.uploadFiles')}
+              </Button>
+              {pastDataFiles.length > 0 && (
+                <Button variant="ghost" onClick={handleClearAll}>
+                  {t('tabs.analysepast.clearAll')}
+                </Button>
+              )}
+            </div>
+
+            {/* Uploaded Files List */}
+            {pastDataFiles.length > 0 && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  {t('tabs.analysepast.uploadedFiles')} ({pastDataFiles.length})
+                </h4>
+                <div className="space-y-2">
+                  {pastDataFiles.map((file, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-white p-2 rounded border">
+                      <span className="text-sm">{file.name}</span>
+                      <button
+                        onClick={() => handleRemoveFile(idx)}
+                        className="text-red-500 hover:text-red-700 text-sm"
+                      >
+                        {t('tabs.analysepast.remove')}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* AI Insights and Participation Data */}
+        {pastDataParticipation && (
+          <div className="space-y-6 mb-6">
+            {/* AI Insights */}
+            {pastDataAiInsights && (
+              <Card className="p-4 bg-blue-50 border-blue-200">
+                <h3 className="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  {t('participation.aiInsights')}
+                </h3>
+                <div className="text-sm text-blue-900 whitespace-pre-wrap">{pastDataAiInsights}</div>
+              </Card>
+            )}
+
+            {/* Summary Stats */}
+            <Card className="p-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-brand-primary">{pastDataParticipation.totalFiles}</p>
+                  <p className="text-sm text-gray-500">{t('tabs.analysepast.filesAnalyzed')}</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-brand-primary">{pastDataParticipation.participationList.length}</p>
+                  <p className="text-sm text-gray-500">{t('participation.totalMembers')}</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-brand-primary">
+                    {pastDataParticipation.participationList.length > 0
+                      ? Math.round(pastDataParticipation.participationList.reduce((acc: number, p: any) => acc + p.participationRate, 0) / pastDataParticipation.participationList.length)
+                      : 0}%
+                  </p>
+                  <p className="text-sm text-gray-500">{t('participation.avgRate')}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Participation Table */}
+            <Card className="overflow-hidden">
+              <div className="p-4 border-b bg-gray-50">
+                <h3 className="font-semibold text-brand-dark">{t('participation.memberList')}</h3>
+              </div>
+              <div className="overflow-x-auto max-h-96">
+                <table className="w-full">
+                  <thead className="bg-gray-100 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t('participation.name')}</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">{t('participation.attended')}</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">{t('participation.total')}</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">{t('participation.rate')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {pastDataParticipation.participationList.map((member: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{member.name}</td>
+                        <td className="px-4 py-3 text-sm text-center text-gray-600">{member.attended}</td>
+                        <td className="px-4 py-3 text-sm text-center text-gray-600">{member.totalEvents}</td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            member.participationRate >= 80 ? 'bg-green-100 text-green-800' :
+                            member.participationRate >= 50 ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {member.participationRate}%
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Chat Interface */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-4 border-b">
+            <h4 className="font-semibold text-brand-dark">{t('tabs.analysepast.chat.title')}</h4>
+          </div>
+
+          {/* Chat History */}
+          <div className="h-80 overflow-y-auto p-4 space-y-4">
+            {pastDataChatHistory.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <p>{t('tabs.analysepast.chat.welcome')}</p>
+              </div>
+            ) : (
+              pastDataChatHistory.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`p-3 rounded-lg ${
+                    msg.role === 'user'
+                      ? 'bg-blue-100 ml-8'
+                      : msg.role === 'system'
+                      ? 'bg-gray-100'
+                      : 'bg-green-50 mr-8'
+                  }`}
+                >
+                  <div className="text-xs font-medium text-gray-500 mb-1">
+                    {msg.role === 'user' ? 'You' : msg.role === 'system' ? 'System' : 'AI Assistant'}
+                  </div>
+                  <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+                </div>
+              ))
+            )}
+            {pastDataIsLoading && (
+              <div className="text-center py-4">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                <p className="text-sm text-gray-500 mt-2">{t('tabs.analysis.analyzing')}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Chat Input */}
+          <div className="p-4 border-t">
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={pastDataChatInput}
+                onChange={(e) => setPastDataChatInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handlePastDataChatSubmit()}
+                placeholder={t('tabs.analysepast.chat.placeholder')}
+                className="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                disabled={pastDataIsLoading || pastDataFiles.length === 0}
+              />
+              <Button
+                onClick={handlePastDataChatSubmit}
+                disabled={!pastDataChatInput.trim() || pastDataIsLoading || pastDataFiles.length === 0}
+              >
+                {t('tabs.analysis.sendMessage')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderSurvey = () => (
     <div className="p-4 max-w-6xl mx-auto">
@@ -723,6 +1822,16 @@ const RollCallSystem: React.FC = () => {
                 {t('tabs.analysis.tab')}
               </button>
               <button
+                onClick={() => setActiveTab('analysepast')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                  activeTab === 'analysepast'
+                    ? 'border-green-600 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t('tabs.analysepast.tab')}
+              </button>
+              <button
                 onClick={() => setActiveTab('survey')}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                   activeTab === 'survey'
@@ -744,6 +1853,7 @@ const RollCallSystem: React.FC = () => {
         {activeTab === 'lordsupper' && renderLordSupper()}
         {activeTab === 'calendar' && renderCalendar()}
         {activeTab === 'analysis' && renderAnalysis()}
+        {activeTab === 'analysepast' && renderAnalysePastData()}
         {activeTab === 'survey' && renderSurvey()}
       </main>
     </div>

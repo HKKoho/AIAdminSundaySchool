@@ -33,14 +33,99 @@
     "analysis": {
       "tab": "Analysis",
       "title": "AI Attendance Analysis",
-      "description": "AI-powered analysis of attendance patterns and trends.",
-      "comingSoon": "AI Attendance Analysis - Coming Soon! Get intelligent insights into attendance trends, patterns, and member engagement."
+      "description": "AI-powered analysis of attendance patterns and trends using PandasAI and OpenAI.",
+      "selectCategory": "Select Analysis Category",
+      "uploadCsv": "Upload CSV File",
+      "dragDrop": "or drag and drop",
+      "csvOnly": "CSV files only",
+      "analyzing": "Analyzing data...",
+      "suggestAnalysis": "Suggest Analysis",
+      "performAnalysis": "Perform Analysis",
+      "clearChat": "Clear Chat",
+      "exportResults": "Export Results",
+      "noFileSelected": "No file selected",
+      "chatPlaceholder": "Ask questions about your attendance data or request specific analysis...",
+      "sendMessage": "Send",
+      "categories": {
+        "worship": "Worship Attendance",
+        "lordsupper": "Lord's Supper Participation",
+        "calendar": "Church Calendar Events"
+      },
+      "suggestions": {
+        "title": "AI Analysis Suggestions",
+        "description": "Based on your data, here are some recommended analyses:",
+        "approve": "Yes, perform this analysis",
+        "decline": "No, skip this",
+        "askAnother": "Suggest another analysis"
+      },
+      "results": {
+        "title": "Analysis Results",
+        "insights": "Key Insights",
+        "recommendations": "Recommendations",
+        "charts": "Visualizations"
+      },
+      "chat": {
+        "title": "AI Analysis Assistant",
+        "welcome": "Welcome! I can help you analyze your attendance data. Upload a CSV file and select a category to get started, or ask me questions about your data.",
+        "fileLoaded": "File loaded successfully! I've analyzed your data. Here's what I found:",
+        "suggestingAnalysis": "Let me suggest some analyses for your data...",
+        "performingAnalysis": "Performing the requested analysis..."
+      },
+      "errors": {
+        "noFile": "Please upload a CSV file first.",
+        "invalidFormat": "Invalid file format. Please upload a CSV file.",
+        "analysisError": "Error performing analysis. Please try again.",
+        "emptyFile": "The uploaded file is empty."
+      },
+      "possibleAnalyses": {
+        "attendanceTrends": "Attendance Trends Over Time",
+        "memberEngagement": "Member Engagement Patterns",
+        "seasonalPatterns": "Seasonal Attendance Patterns",
+        "dropoffAnalysis": "Member Drop-off Analysis",
+        "growthRate": "Attendance Growth Rate",
+        "comparisonAnalysis": "Year-over-Year Comparison",
+        "correlationAnalysis": "Event Correlation Analysis",
+        "predictiveAnalysis": "Predictive Attendance Forecasting"
+      }
     },
     "survey": {
       "tab": "Survey",
       "title": "AI Survey Generator",
       "description": "AI-powered survey creation and analysis for church feedback.",
       "comingSoon": "AI Survey System - Coming Soon! Create intelligent surveys and analyze member feedback with AI assistance."
+    },
+    "analysepast": {
+      "tab": "Analyse Past Data",
+      "title": "Analyse Past Roll Call Data",
+      "description": "Upload multiple CSV files from past roll calls to analyze attendance patterns and trends using AI.",
+      "uploadMultiple": "Upload Multiple CSV Files",
+      "dragDropMultiple": "or drag and drop multiple files",
+      "filesSelected": "{{count}} file(s) selected",
+      "noFilesSelected": "No files selected",
+      "processFiles": "Process Files",
+      "clearFiles": "Clear Files",
+      "processing": "Processing files...",
+      "aiInsights": "AI Insights",
+      "participationSummary": "Participation Summary",
+      "totalFiles": "Total Files",
+      "totalMembers": "Total Members",
+      "avgRate": "Average Rate",
+      "memberList": "Member Participation List",
+      "name": "Name",
+      "attended": "Attended",
+      "total": "Total",
+      "rate": "Rate",
+      "chatTitle": "AI Analysis Assistant",
+      "chatWelcome": "Welcome! Upload multiple CSV files from your past roll calls to analyze attendance patterns. I can help identify trends, member engagement patterns, and provide insights.",
+      "chatPlaceholder": "Ask questions about your attendance data...",
+      "sendMessage": "Send",
+      "clearChat": "Clear Chat",
+      "exportResults": "Export Results",
+      "errors": {
+        "noFiles": "Please upload at least one CSV file.",
+        "invalidFormat": "Invalid file format. Please upload CSV files only.",
+        "processingError": "Error processing files. Please try again."
+      }
     }
   },
   "recovery": {
@@ -101,5 +186,20 @@
     "attendance": "Attendance",
     "rate": "Rate",
     "viewDetails": "View Details"
+  },
+  "participation": {
+    "refresh": "Refresh Data",
+    "loading": "Loading participation data...",
+    "aiInsights": "AI Insights",
+    "totalEvents": "Total Events",
+    "totalMembers": "Total Members",
+    "avgRate": "Avg. Rate",
+    "memberList": "Member Participation List",
+    "name": "Name",
+    "attended": "Attended",
+    "total": "Total",
+    "rate": "Rate",
+    "lastAttended": "Last Attended",
+    "csvFiles": "CSV Files in Database"
   }
 }

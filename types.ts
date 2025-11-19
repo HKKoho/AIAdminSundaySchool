@@ -62,6 +62,7 @@ export interface Resource {
 
 export interface ClassArrangementInfo {
   id: string;
+  _id?: any; // MongoDB ObjectId
   time: string;
   beginningDate: string;
   duration: string;
@@ -69,6 +70,25 @@ export interface ClassArrangementInfo {
   teacher: string;
   focusLevel: string;
   group: string;
+  createdAt?: string; // ISO timestamp
+}
+
+export interface ChurchActivity {
+  id: string;
+  _id?: any; // MongoDB ObjectId
+  title: string;
+  date: string;
+  time: string;
+  duration: string;
+  location: string;
+  organizer: string;
+  category: string;
+  description: string;
+  registrationRequired: string;
+  capacity: string;
+  contactPerson: string;
+  contactPhone: string;
+  createdAt?: string; // ISO timestamp
 }
 
 // ========== AI Engine Configuration ==========

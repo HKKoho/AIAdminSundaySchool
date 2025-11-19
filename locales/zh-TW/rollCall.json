@@ -33,14 +33,99 @@
     "analysis": {
       "tab": "分析",
       "title": "AI 出席分析",
-      "description": "AI 驅動的出席模式和趨勢分析。",
-      "comingSoon": "AI 出席分析 - 即將推出！獲得有關出席趨勢、模式和成員參與度的智能見解。"
+      "description": "使用 PandasAI 和 OpenAI 進行 AI 驅動的出席模式和趨勢分析。",
+      "selectCategory": "選擇分析類別",
+      "uploadCsv": "上傳 CSV 檔案",
+      "dragDrop": "或拖放檔案",
+      "csvOnly": "僅限 CSV 檔案",
+      "analyzing": "正在分析資料...",
+      "suggestAnalysis": "建議分析",
+      "performAnalysis": "執行分析",
+      "clearChat": "清除對話",
+      "exportResults": "匯出結果",
+      "noFileSelected": "尚未選擇檔案",
+      "chatPlaceholder": "詢問有關出席資料的問題或要求特定分析...",
+      "sendMessage": "發送",
+      "categories": {
+        "worship": "崇拜出席",
+        "lordsupper": "聖餐參與",
+        "calendar": "教會日曆活動"
+      },
+      "suggestions": {
+        "title": "AI 分析建議",
+        "description": "根據您的資料，以下是一些推薦的分析：",
+        "approve": "是的，執行此分析",
+        "decline": "否，跳過此項",
+        "askAnother": "建議另一個分析"
+      },
+      "results": {
+        "title": "分析結果",
+        "insights": "主要見解",
+        "recommendations": "建議",
+        "charts": "視覺化圖表"
+      },
+      "chat": {
+        "title": "AI 分析助手",
+        "welcome": "歡迎！我可以幫助您分析出席資料。上傳 CSV 檔案並選擇類別即可開始，或向我詢問有關資料的問題。",
+        "fileLoaded": "檔案載入成功！我已分析您的資料。以下是我的發現：",
+        "suggestingAnalysis": "讓我為您的資料建議一些分析...",
+        "performingAnalysis": "正在執行所需的分析..."
+      },
+      "errors": {
+        "noFile": "請先上傳 CSV 檔案。",
+        "invalidFormat": "無效的檔案格式。請上傳 CSV 檔案。",
+        "analysisError": "執行分析時發生錯誤。請重試。",
+        "emptyFile": "上傳的檔案是空的。"
+      },
+      "possibleAnalyses": {
+        "attendanceTrends": "出席趨勢分析",
+        "memberEngagement": "成員參與模式",
+        "seasonalPatterns": "季節性出席模式",
+        "dropoffAnalysis": "成員流失分析",
+        "growthRate": "出席增長率",
+        "comparisonAnalysis": "年度對比分析",
+        "correlationAnalysis": "活動關聯分析",
+        "predictiveAnalysis": "預測性出席預測"
+      }
     },
     "survey": {
       "tab": "問卷",
       "title": "AI 問卷生成器",
       "description": "AI 驅動的問卷創建和教會回饋分析。",
       "comingSoon": "AI 問卷系統 - 即將推出！在 AI 協助下創建智能問卷並分析成員回饋。"
+    },
+    "analysepast": {
+      "tab": "分析過去資料",
+      "title": "分析過去點名資料",
+      "description": "上傳多個過去點名的 CSV 檔案，使用 AI 分析出席模式和趨勢。",
+      "uploadMultiple": "上傳多個 CSV 檔案",
+      "dragDropMultiple": "或拖放多個檔案",
+      "filesSelected": "已選擇 {{count}} 個檔案",
+      "noFilesSelected": "尚未選擇檔案",
+      "processFiles": "處理檔案",
+      "clearFiles": "清除檔案",
+      "processing": "正在處理檔案...",
+      "aiInsights": "AI 見解",
+      "participationSummary": "參與摘要",
+      "totalFiles": "檔案總數",
+      "totalMembers": "成員總數",
+      "avgRate": "平均出席率",
+      "memberList": "成員參與名單",
+      "name": "姓名",
+      "attended": "出席次數",
+      "total": "總次數",
+      "rate": "出席率",
+      "chatTitle": "AI 分析助手",
+      "chatWelcome": "歡迎！上傳多個過去點名的 CSV 檔案來分析出席模式。我可以幫助識別趨勢、成員參與模式並提供見解。",
+      "chatPlaceholder": "詢問有關出席資料的問題...",
+      "sendMessage": "發送",
+      "clearChat": "清除對話",
+      "exportResults": "匯出結果",
+      "errors": {
+        "noFiles": "請至少上傳一個 CSV 檔案。",
+        "invalidFormat": "無效的檔案格式。請僅上傳 CSV 檔案。",
+        "processingError": "處理檔案時發生錯誤。請重試。"
+      }
     }
   },
   "recovery": {
@@ -101,5 +186,20 @@
     "attendance": "出席人數",
     "rate": "出席率",
     "viewDetails": "查看詳情"
+  },
+  "participation": {
+    "refresh": "重新整理資料",
+    "loading": "正在載入參與資料...",
+    "aiInsights": "AI 見解",
+    "totalEvents": "活動總數",
+    "totalMembers": "成員總數",
+    "avgRate": "平均出席率",
+    "memberList": "成員參與名單",
+    "name": "姓名",
+    "attended": "出席次數",
+    "total": "總次數",
+    "rate": "出席率",
+    "lastAttended": "最後出席",
+    "csvFiles": "資料庫中的 CSV 檔案"
   }
 }
