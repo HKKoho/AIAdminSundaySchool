@@ -178,7 +178,7 @@ const RollCallSystem: React.FC = () => {
       if (!eventTypeQuery) return;
 
       try {
-        const response = await fetch(`/api/attendance/get?eventType=${eventTypeQuery}`);
+        const response = await fetch(`/api/attendance?eventType=${eventTypeQuery}`);
         const result = await response.json();
 
         if (result.success && result.data) {
