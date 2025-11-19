@@ -34,6 +34,8 @@ const WhatsAppBookkeeper: React.FC<WhatsAppBookkeeperProps> = ({ onBack, hideHea
 
   // Poll server for connection status
   useEffect(() => {
+    let pollCount = 0;
+
     const pollStatus = async () => {
       try {
         const response = await fetch(`${API_URL}/api/status`);
@@ -54,19 +56,33 @@ const WhatsAppBookkeeper: React.FC<WhatsAppBookkeeperProps> = ({ onBack, hideHea
           setQrCode('');
         }
         setServerError('');
+        pollCount = 0; // Reset on success
       } catch (error) {
-        console.error('Error polling status:', error);
+        // Only log first few errors to avoid console spam
+        if (pollCount < 3) {
+          console.warn('Bookkeeper backend not available:', API_URL);
+        }
+        pollCount++;
         setConnectionState('disconnected');
         setServerError(t('errors.serverNotRunning'));
       }
     };
 
-    // Poll every 2 seconds
+    // Initial poll
     pollStatus();
-    const interval = setInterval(pollStatus, 2000);
+
+    // Poll every 2 seconds when connected, 10 seconds when disconnected
+    const interval = setInterval(() => {
+      if (connectionState === 'disconnected') {
+        // Slower polling when disconnected to reduce console spam
+        pollStatus();
+      } else {
+        pollStatus();
+      }
+    }, connectionState === 'disconnected' ? 10000 : 2000);
 
     return () => clearInterval(interval);
-  }, [t]);
+  }, [t, connectionState]);
 
   // Poll for documents when connected
   useEffect(() => {
@@ -151,16 +167,24 @@ const WhatsAppBookkeeper: React.FC<WhatsAppBookkeeperProps> = ({ onBack, hideHea
         </div>
 
         {serverError && (
-          <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+          <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
             <div className="flex items-start space-x-3">
-              <svg className="w-5 h-5 text-red-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg className="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <div className="flex-1">
-                <p className="text-sm font-medium text-red-800">{serverError}</p>
-                <p className="text-xs text-red-600 mt-1">
-                  {t('errors.startServer')}: <code className="bg-red-100 px-1 py-0.5 rounded">cd bookkeeper-server && npm start</code>
+                <p className="text-base font-semibold text-amber-800">{serverError}</p>
+                <p className="text-sm text-amber-700 mt-2">
+                  {t('errors.backendRequired')}
                 </p>
+                <p className="text-sm text-amber-600 mt-2">
+                  {t('errors.setupInstructions')}
+                </p>
+                <div className="mt-3 p-2 bg-amber-100 rounded">
+                  <p className="text-xs text-amber-800 font-mono">
+                    {t('errors.startServer')}: <code className="bg-amber-200 px-1 py-0.5 rounded">cd bookkeeper-server && npm start</code>
+                  </p>
+                </div>
               </div>
             </div>
           </div>

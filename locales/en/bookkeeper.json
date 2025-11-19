@@ -36,8 +36,10 @@
     "qrInstructions": "Open WhatsApp on your phone → Settings → Linked Devices → Link a Device → Scan this QR code"
   },
   "errors": {
-    "serverNotRunning": "Server not running or unreachable",
-    "startServer": "Start the server with"
+    "serverNotRunning": "Backend Server Not Available",
+    "startServer": "Start the server with",
+    "backendRequired": "The AI Bookkeeper requires a backend server running on port 3002 to handle WhatsApp integration.",
+    "setupInstructions": "Please ensure the Bookkeeper backend server is running locally or deployed to a cloud service."
   },
   "stats": {
     "totalDocuments": "Total Documents",

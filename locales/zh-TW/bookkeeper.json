@@ -36,8 +36,10 @@
     "qrInstructions": "打開手機 WhatsApp → 設定 → 已連結的裝置 → 連結裝置 → 掃描此 QR 碼"
   },
   "errors": {
-    "serverNotRunning": "伺服器未運行或無法連接",
-    "startServer": "使用以下命令啟動伺服器"
+    "serverNotRunning": "後端伺服器不可用",
+    "startServer": "使用以下命令啟動伺服器",
+    "backendRequired": "AI 記帳助手需要在端口 3002 上運行的後端伺服器來處理 WhatsApp 整合。",
+    "setupInstructions": "請確保記帳後端伺服器正在本地運行或已部署到雲端服務。"
   },
   "stats": {
     "totalDocuments": "文件總數",
