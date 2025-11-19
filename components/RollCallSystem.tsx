@@ -39,7 +39,8 @@ type RollCallTab = 'rollcall' | 'worship' | 'lordsupper' | 'calendar' | 'analysi
 type EventType = 'worship' | 'lordsupper' | 'christmaseve' | 'easterfriday' | 'eastersunday';
 
 const RollCallSystem: React.FC = () => {
-  const { t } = useTranslation('rollCall');
+  const { t, i18n } = useTranslation('rollCall');
+  const isChineseMode = i18n.language === 'zh-TW' || i18n.language === 'zh';
 
   // Tab state
   const [activeTab, setActiveTab] = useState<RollCallTab>('rollcall');
@@ -1862,6 +1863,10 @@ Help analyze patterns, answer questions about attendance and late arrivals, and 
       }]);
 
       try {
+        const languageInstruction = isChineseMode
+          ? '\n\nIMPORTANT: Generate ALL content in Traditional Chinese (繁體中文). This includes the survey title, introduction, all questions, options, and closing message.'
+          : '';
+
         const systemPrompt = `You are an expert church survey designer with expertise in pastoral care and spiritual formation. Your role is to help church leaders create sensitive, well-crafted surveys that:
 
 1. Respect member anonymity and feelings
@@ -1887,9 +1892,24 @@ OUTPUT FORMAT - Create a complete survey with:
    - Options if applicable
 4. Closing message (thanking respondents)
 
-Format the output clearly so it can be easily transferred to Google Forms.`;
+Format the output clearly so it can be easily transferred to Google Forms.${languageInstruction}`;
 
-        const userPrompt = `Create a church survey with these parameters:
+        const userPrompt = isChineseMode
+          ? `請使用繁體中文創建教會問卷，參數如下：
+
+**問卷目標：**
+${surveyObjectives}
+
+**目標受訪者：**
+${surveyTargetRespondents}
+
+**領袖關注的深入問題：**
+${surveyDeepQuestions || '未提供具體的深入問題 - 請根據目標使用您的專業知識設計適當的問題。'}
+
+請創建一份完整、敏感的問卷，在關注會友感受的同時處理這些目標。問卷應收集關於會友屬靈狀態和意見的有意義見解，同時保持關懷的牧養語調。
+
+所有內容必須使用繁體中文。`
+          : `Create a church survey with these parameters:
 
 **Survey Objectives:**
 ${surveyObjectives}
@@ -1947,6 +1967,10 @@ Example Google Form for reference: https://docs.google.com/forms/d/1uHIUNg5eEoFm
       setSurveyIsLoading(true);
 
       try {
+        const languageInstruction = isChineseMode
+          ? '\n\nIMPORTANT: You MUST respond entirely in Traditional Chinese (繁體中文). All survey content, suggestions, and explanations should be in Traditional Chinese.'
+          : '';
+
         const systemPrompt = `You are an expert church survey consultant helping refine and improve surveys. You have deep knowledge of:
 - Pastoral care and spiritual formation
 - Survey methodology and question design
@@ -1960,7 +1984,7 @@ Current survey context:
 
 ${surveyOutput ? `Current survey draft:\n${surveyOutput.substring(0, 1500)}...` : 'No survey generated yet.'}
 
-Help the user refine their survey, answer questions about survey design, or suggest improvements. Always maintain a pastoral, caring approach.`;
+Help the user refine their survey, answer questions about survey design, or suggest improvements. Always maintain a pastoral, caring approach.${languageInstruction}`;
 
         const conversationHistory = surveyChatHistory.slice(-10).map(msg => ({
           role: msg.role === 'system' ? 'assistant' : msg.role,
