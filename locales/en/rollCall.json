@@ -114,6 +114,13 @@
         "invalidFormat": "Invalid file format. Please upload CSV files only.",
         "processingError": "Error processing files. Please try again.",
         "analysisError": "Error during analysis. Please try again."
+      },
+      "pastoralQuestions": {
+        "select": "-- Select a pastoral care question --",
+        "q1": "Which members have been absent for 2 or more consecutive weeks and need pastoral follow-up?",
+        "q2": "Which members have low attendance (below 50%) and may need encouragement?",
+        "q3": "Who are the frequently late members (arriving after 9:45am) that may need pastoral care?",
+        "q4": "List members with decreasing attendance trends who may be struggling and need support."
       }
     }
   },

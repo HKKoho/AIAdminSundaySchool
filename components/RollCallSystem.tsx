@@ -1797,6 +1797,25 @@ Help analyze patterns, answer questions about attendance and late arrivals, and 
 
           {/* Chat Input */}
           <div className="p-4 border-t">
+            {/* Pastoral Care Questions Dropdown */}
+            <div className="mb-3">
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setPastDataChatInput(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+                className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                disabled={pastDataIsLoading || pastDataFiles.length === 0}
+              >
+                <option value="">{t('tabs.analysepast.pastoralQuestions.select')}</option>
+                <option value={t('tabs.analysepast.pastoralQuestions.q1')}>{t('tabs.analysepast.pastoralQuestions.q1')}</option>
+                <option value={t('tabs.analysepast.pastoralQuestions.q2')}>{t('tabs.analysepast.pastoralQuestions.q2')}</option>
+                <option value={t('tabs.analysepast.pastoralQuestions.q3')}>{t('tabs.analysepast.pastoralQuestions.q3')}</option>
+                <option value={t('tabs.analysepast.pastoralQuestions.q4')}>{t('tabs.analysepast.pastoralQuestions.q4')}</option>
+              </select>
+            </div>
             <div className="flex space-x-2">
               <input
                 type="text"
