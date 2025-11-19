@@ -91,8 +91,35 @@
     "survey": {
       "tab": "Survey",
       "title": "AI Survey Generator",
-      "description": "AI-powered survey creation and analysis for church feedback.",
-      "comingSoon": "AI Survey System - Coming Soon! Create intelligent surveys and analyze member feedback with AI assistance."
+      "description": "Create sensitive, pastoral surveys to understand members' spiritual state and opinions anonymously.",
+      "googleFormsInfo": "Generated surveys are formatted for easy creation in Google Forms:",
+      "exampleForm": "View Example Form",
+      "viewResponses": "View Response Analysis",
+      "inputSection": "Survey Parameters",
+      "objectives": "Survey Objectives",
+      "objectivesPlaceholder": "e.g., Understand members' spiritual growth needs, gather feedback on church programs, assess community engagement...",
+      "targetRespondents": "Target Respondents",
+      "targetPlaceholder": "e.g., All members, Youth group, New believers, Small group leaders...",
+      "deepQuestions": "Deep Questions (Leadership Concerns)",
+      "deepQuestionsPlaceholder": "Enter sensitive questions you want to address but are concerned about how members might interpret them. The AI will help phrase these carefully...",
+      "deepQuestionsHint": "The AI will help phrase these questions sensitively to avoid misinterpretation while gathering honest feedback.",
+      "generate": "Generate Survey",
+      "generating": "Generating survey...",
+      "clear": "Clear",
+      "notSpecified": "Not specified",
+      "aiAssistant": "Survey Design Assistant",
+      "copySurvey": "Copy Survey",
+      "copied": "Survey copied to clipboard!",
+      "welcome": "Welcome! I'm your AI Survey Expert.\n\nI'll help you create sensitive, well-crafted surveys that:\n• Respect member anonymity and feelings\n• Use warm, pastoral language\n• Avoid questions that could be misinterpreted\n• Gather honest feedback about spiritual state\n\nFill in the parameters above and click 'Generate Survey' to start.",
+      "you": "You",
+      "aiExpert": "Survey Expert AI",
+      "thinking": "Designing survey...",
+      "chatPlaceholder": "Ask me to refine questions, add topics, or explain survey design choices...",
+      "errors": {
+        "requiredFields": "Please fill in both Objectives and Target Respondents.",
+        "generateError": "Failed to generate survey. Please try again.",
+        "chatError": "Failed to get response. Please try again."
+      }
     },
     "analysepast": {
       "tab": "Analyse Past Data",

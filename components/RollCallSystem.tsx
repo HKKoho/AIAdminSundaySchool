@@ -101,6 +101,15 @@ const RollCallSystem: React.FC = () => {
   const [pastDataAiInsights, setPastDataAiInsights] = useState('');
   const pastDataFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Survey tab state
+  const [surveyObjectives, setSurveyObjectives] = useState('');
+  const [surveyTargetRespondents, setSurveyTargetRespondents] = useState('');
+  const [surveyDeepQuestions, setSurveyDeepQuestions] = useState('');
+  const [surveyChatHistory, setSurveyChatHistory] = useState<AnalysisChatMessage[]>([]);
+  const [surveyChatInput, setSurveyChatInput] = useState('');
+  const [surveyIsLoading, setSurveyIsLoading] = useState(false);
+  const [surveyOutput, setSurveyOutput] = useState('');
+
   // Load saved data on component mount
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
@@ -1839,17 +1848,330 @@ Help analyze patterns, answer questions about attendance and late arrivals, and 
     );
   };
 
-  const renderSurvey = () => (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.survey.title')}</h3>
-        <p className="text-gray-600 mb-4">{t('tabs.survey.description')}</p>
-        <div className="bg-brand-light p-4 rounded-lg">
-          <p className="text-sm text-gray-700">{t('tabs.survey.comingSoon')}</p>
+  const renderSurvey = () => {
+    const handleSurveyGenerate = async () => {
+      if (!surveyObjectives.trim() || !surveyTargetRespondents.trim()) {
+        alert(t('tabs.survey.errors.requiredFields'));
+        return;
+      }
+
+      setSurveyIsLoading(true);
+      setSurveyChatHistory(prev => [...prev, {
+        role: 'user',
+        content: `${t('tabs.survey.generating')}\n\n**${t('tabs.survey.objectives')}:** ${surveyObjectives}\n\n**${t('tabs.survey.targetRespondents')}:** ${surveyTargetRespondents}\n\n**${t('tabs.survey.deepQuestions')}:** ${surveyDeepQuestions || t('tabs.survey.notSpecified')}`
+      }]);
+
+      try {
+        const systemPrompt = `You are an expert church survey designer with expertise in pastoral care and spiritual formation. Your role is to help church leaders create sensitive, well-crafted surveys that:
+
+1. Respect member anonymity and feelings
+2. Avoid questions that could be misinterpreted as judgmental
+3. Use warm, caring language that reflects pastoral concern
+4. Help gather honest feedback about spiritual state and opinions
+5. Are formatted for easy creation in Google Forms
+
+IMPORTANT GUIDELINES:
+- Questions should feel supportive, not interrogative
+- Use Likert scales (1-5) for sensitive topics
+- Include open-ended questions for personal expression
+- Avoid leading questions or assumptions
+- Consider cultural sensitivities in church context
+- Phrase questions to encourage honest, reflective responses
+
+OUTPUT FORMAT - Create a complete survey with:
+1. Survey Title
+2. Introduction message (warm, explaining purpose)
+3. 8-12 questions with:
+   - Question text
+   - Question type (Multiple choice, Linear scale, Paragraph, etc.)
+   - Options if applicable
+4. Closing message (thanking respondents)
+
+Format the output clearly so it can be easily transferred to Google Forms.`;
+
+        const userPrompt = `Create a church survey with these parameters:
+
+**Survey Objectives:**
+${surveyObjectives}
+
+**Target Respondents:**
+${surveyTargetRespondents}
+
+**Deep Questions/Concerns from Leadership:**
+${surveyDeepQuestions || 'No specific deep questions provided - use your expertise to design appropriate questions based on objectives.'}
+
+Please create a complete, sensitive survey that addresses these objectives while being mindful of members' feelings. The survey should gather meaningful insights about members' spiritual state and opinions while maintaining a caring, pastoral tone.
+
+Example Google Form for reference: https://docs.google.com/forms/d/1uHIUNg5eEoFmLjw3CubXabzMzEHQURYTspwIc2RVFko/edit`;
+
+        const response = await fetch('/api/unified', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.7,
+            maxTokens: 3000,
+          }),
+        });
+
+        if (!response.ok) throw new Error('Failed to generate survey');
+
+        const data = await response.json();
+        const surveyContent = data.choices?.[0]?.message?.content || '';
+
+        setSurveyOutput(surveyContent);
+        setSurveyChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: surveyContent
+        }]);
+      } catch (error) {
+        console.error('Error generating survey:', error);
+        setSurveyChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: t('tabs.survey.errors.generateError')
+        }]);
+      } finally {
+        setSurveyIsLoading(false);
+      }
+    };
+
+    const handleSurveyChatSubmit = async () => {
+      if (!surveyChatInput.trim()) return;
+
+      const userMessage = surveyChatInput.trim();
+      setSurveyChatInput('');
+      setSurveyChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+      setSurveyIsLoading(true);
+
+      try {
+        const systemPrompt = `You are an expert church survey consultant helping refine and improve surveys. You have deep knowledge of:
+- Pastoral care and spiritual formation
+- Survey methodology and question design
+- Church member sensitivity and anonymous feedback
+- Google Forms formatting and features
+
+Current survey context:
+- Objectives: ${surveyObjectives || 'Not specified'}
+- Target: ${surveyTargetRespondents || 'Not specified'}
+- Deep questions: ${surveyDeepQuestions || 'Not specified'}
+
+${surveyOutput ? `Current survey draft:\n${surveyOutput.substring(0, 1500)}...` : 'No survey generated yet.'}
+
+Help the user refine their survey, answer questions about survey design, or suggest improvements. Always maintain a pastoral, caring approach.`;
+
+        const conversationHistory = surveyChatHistory.slice(-10).map(msg => ({
+          role: msg.role === 'system' ? 'assistant' : msg.role,
+          content: msg.content
+        }));
+
+        const response = await fetch('/api/unified', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...conversationHistory,
+              { role: 'user', content: userMessage }
+            ],
+            temperature: 0.7,
+            maxTokens: 1500,
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const reply = result.choices?.[0]?.message?.content || '';
+          setSurveyChatHistory(prev => [...prev, { role: 'assistant', content: reply }]);
+        }
+      } catch (error) {
+        console.error('Error in survey chat:', error);
+        setSurveyChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: t('tabs.survey.errors.chatError')
+        }]);
+      } finally {
+        setSurveyIsLoading(false);
+      }
+    };
+
+    const handleClearSurvey = () => {
+      setSurveyObjectives('');
+      setSurveyTargetRespondents('');
+      setSurveyDeepQuestions('');
+      setSurveyChatHistory([]);
+      setSurveyOutput('');
+    };
+
+    const handleCopySurvey = () => {
+      if (surveyOutput) {
+        navigator.clipboard.writeText(surveyOutput);
+        alert(t('tabs.survey.copied'));
+      }
+    };
+
+    return (
+      <div className="p-4 max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h3 className="text-xl font-bold text-brand-dark mb-4">{t('tabs.survey.title')}</h3>
+          <p className="text-gray-600 mb-4">{t('tabs.survey.description')}</p>
+
+          {/* Google Forms Links */}
+          <div className="bg-blue-50 p-4 rounded-lg mb-4">
+            <p className="text-sm text-blue-800 mb-2">{t('tabs.survey.googleFormsInfo')}</p>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href="https://docs.google.com/forms/d/1uHIUNg5eEoFmLjw3CubXabzMzEHQURYTspwIc2RVFko/edit"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                {t('tabs.survey.exampleForm')} →
+              </a>
+              <a
+                href="https://docs.google.com/forms/d/1uHIUNg5eEoFmLjw3CubXabzMzEHQURYTspwIc2RVFko/edit#responses"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                {t('tabs.survey.viewResponses')} →
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Input Section */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h4 className="font-semibold text-brand-dark mb-4">{t('tabs.survey.inputSection')}</h4>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('tabs.survey.objectives')} <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={surveyObjectives}
+                onChange={(e) => setSurveyObjectives(e.target.value)}
+                placeholder={t('tabs.survey.objectivesPlaceholder')}
+                className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('tabs.survey.targetRespondents')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={surveyTargetRespondents}
+                onChange={(e) => setSurveyTargetRespondents(e.target.value)}
+                placeholder={t('tabs.survey.targetPlaceholder')}
+                className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('tabs.survey.deepQuestions')}
+              </label>
+              <textarea
+                value={surveyDeepQuestions}
+                onChange={(e) => setSurveyDeepQuestions(e.target.value)}
+                placeholder={t('tabs.survey.deepQuestionsPlaceholder')}
+                className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                rows={4}
+              />
+              <p className="text-xs text-gray-500 mt-1">{t('tabs.survey.deepQuestionsHint')}</p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSurveyGenerate}
+                disabled={surveyIsLoading || !surveyObjectives.trim() || !surveyTargetRespondents.trim()}
+                className="flex-1"
+              >
+                {surveyIsLoading ? t('tabs.survey.generating') : t('tabs.survey.generate')}
+              </Button>
+              <Button
+                onClick={handleClearSurvey}
+                variant="ghost"
+              >
+                {t('tabs.survey.clear')}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Interface */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-4 border-b flex justify-between items-center">
+            <h4 className="font-semibold text-brand-dark">{t('tabs.survey.aiAssistant')}</h4>
+            {surveyOutput && (
+              <Button onClick={handleCopySurvey} variant="ghost" className="text-sm">
+                {t('tabs.survey.copySurvey')}
+              </Button>
+            )}
+          </div>
+
+          {/* Chat History */}
+          <div className="h-96 overflow-y-auto p-4 space-y-4">
+            {surveyChatHistory.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <p className="whitespace-pre-wrap">{t('tabs.survey.welcome')}</p>
+              </div>
+            ) : (
+              surveyChatHistory.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`p-3 rounded-lg ${
+                    msg.role === 'user'
+                      ? 'bg-blue-100 ml-8'
+                      : 'bg-green-50 mr-8'
+                  }`}
+                >
+                  <div className="text-xs font-medium text-gray-500 mb-1">
+                    {msg.role === 'user' ? t('tabs.survey.you') : t('tabs.survey.aiExpert')}
+                  </div>
+                  <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+                </div>
+              ))
+            )}
+            {surveyIsLoading && (
+              <div className="text-center py-4">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                <p className="text-sm text-gray-500 mt-2">{t('tabs.survey.thinking')}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Chat Input */}
+          <div className="p-4 border-t">
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={surveyChatInput}
+                onChange={(e) => setSurveyChatInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSurveyChatSubmit()}
+                placeholder={t('tabs.survey.chatPlaceholder')}
+                className="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                disabled={surveyIsLoading}
+              />
+              <Button
+                onClick={handleSurveyChatSubmit}
+                disabled={!surveyChatInput.trim() || surveyIsLoading}
+              >
+                {t('tabs.analysis.sendMessage')}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col bg-gray-50 h-full">

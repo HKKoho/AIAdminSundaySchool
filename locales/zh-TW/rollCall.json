@@ -91,8 +91,35 @@
     "survey": {
       "tab": "問卷",
       "title": "AI 問卷生成器",
-      "description": "AI 驅動的問卷創建和教會回饋分析。",
-      "comingSoon": "AI 問卷系統 - 即將推出！在 AI 協助下創建智能問卷並分析成員回饋。"
+      "description": "創建敏感、有牧養關懷的問卷，以匿名方式了解會友的屬靈狀態和意見。",
+      "googleFormsInfo": "生成的問卷格式適合在 Google 表單中創建：",
+      "exampleForm": "查看範例表單",
+      "viewResponses": "查看回應分析",
+      "inputSection": "問卷參數",
+      "objectives": "問卷目標",
+      "objectivesPlaceholder": "例如：了解會友的屬靈成長需要、收集對教會事工的回饋、評估社區參與度...",
+      "targetRespondents": "目標受訪者",
+      "targetPlaceholder": "例如：全體會友、青年團契、初信者、小組組長...",
+      "deepQuestions": "深入問題（領袖關注）",
+      "deepQuestionsPlaceholder": "輸入您想提出但擔心會友可能會誤解的敏感問題。AI 會幫助您謹慎地措辭...",
+      "deepQuestionsHint": "AI 會幫助敏感地措辭這些問題，避免誤解同時收集真實的回饋。",
+      "generate": "生成問卷",
+      "generating": "正在生成問卷...",
+      "clear": "清除",
+      "notSpecified": "未指定",
+      "aiAssistant": "問卷設計助手",
+      "copySurvey": "複製問卷",
+      "copied": "問卷已複製到剪貼簿！",
+      "welcome": "歡迎！我是您的 AI 問卷專家。\n\n我會幫助您創建敏感、精心設計的問卷：\n• 尊重會友的匿名性和感受\n• 使用溫暖的牧養語言\n• 避免可能被誤解的問題\n• 收集關於屬靈狀態的真實回饋\n\n填寫上方的參數，然後點擊「生成問卷」開始。",
+      "you": "您",
+      "aiExpert": "問卷專家 AI",
+      "thinking": "正在設計問卷...",
+      "chatPlaceholder": "請我改進問題、添加主題或解釋問卷設計選擇...",
+      "errors": {
+        "requiredFields": "請填寫問卷目標和目標受訪者。",
+        "generateError": "生成問卷失敗，請重試。",
+        "chatError": "獲取回應失敗，請重試。"
+      }
     },
     "analysepast": {
       "tab": "分析過去資料",
