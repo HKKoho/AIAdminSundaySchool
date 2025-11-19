@@ -84,15 +84,18 @@ async function callGemini(request: AIRequest): Promise<AIResponse> {
     const response = await result.response;
     const text = response.text();
 
+    // Get usage metadata if available
+    const usageMetadata = (response as any).usageMetadata;
+
     return {
       success: true,
       content: text,
       provider: 'gemini',
-      usage: {
-        promptTokens: response.usageMetadata?.promptTokenCount,
-        completionTokens: response.usageMetadata?.candidatesTokenCount,
-        totalTokens: response.usageMetadata?.totalTokenCount
-      }
+      usage: usageMetadata ? {
+        promptTokens: usageMetadata.promptTokenCount,
+        completionTokens: usageMetadata.candidatesTokenCount,
+        totalTokens: usageMetadata.totalTokenCount
+      } : undefined
     };
   } catch (error: any) {
     logger.error('Gemini API error:', error);
@@ -164,13 +167,20 @@ async function callOllama(request: AIRequest): Promise<AIResponse> {
       throw new Error(`Ollama API error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as {
+      choices?: Array<{ message?: { content?: string } }>;
+      usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+    };
 
     return {
       success: true,
       content: data.choices?.[0]?.message?.content || '',
       provider: 'ollama',
-      usage: data.usage
+      usage: data.usage ? {
+        promptTokens: data.usage.prompt_tokens,
+        completionTokens: data.usage.completion_tokens,
+        totalTokens: data.usage.total_tokens
+      } : undefined
     };
   } catch (error: any) {
     logger.error('Ollama API error:', error);

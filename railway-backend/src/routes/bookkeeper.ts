@@ -1,10 +1,22 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { ObjectId } from 'mongodb';
 import { getBookkeeperStatus, sendBookkeeperMessage } from '../services/whatsapp';
 import { generateText } from '../services/ai';
 import { collections } from '../services/mongodb';
 import { logger } from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
+
+// Helper to create MongoDB query for document ID
+function createIdQuery(id: string) {
+  const query: any = { id };
+  // Also check _id if it's a valid ObjectId
+  if (ObjectId.isValid(id)) {
+    query.$or = [{ id }, { _id: new ObjectId(id) }];
+    delete query.id;
+  }
+  return query;
+}
 
 const router = Router();
 
@@ -99,9 +111,7 @@ router.post('/classify/:id', async (req, res) => {
     const { id } = req.params;
 
     // Get document
-    const doc = await collections.documents().findOne({
-      $or: [{ id }, { _id: id }]
-    });
+    const doc = await collections.documents().findOne(createIdQuery(id));
 
     if (!doc) {
       return res.status(404).json({
@@ -112,7 +122,7 @@ router.post('/classify/:id', async (req, res) => {
 
     // Update status to classifying
     await collections.documents().updateOne(
-      { $or: [{ id }, { _id: id }] },
+      createIdQuery(id),
       { $set: { status: 'classifying' } }
     );
 
@@ -162,7 +172,7 @@ Respond in JSON format:
 
     // Update document with classification
     await collections.documents().updateOne(
-      { $or: [{ id }, { _id: id }] },
+      createIdQuery(id),
       {
         $set: {
           status: 'classified',
@@ -187,7 +197,7 @@ Respond in JSON format:
 
     // Update status to rejected on error
     await collections.documents().updateOne(
-      { $or: [{ id: req.params.id }, { _id: req.params.id }] },
+      createIdQuery(req.params.id),
       { $set: { status: 'rejected' } }
     );
 
@@ -302,9 +312,7 @@ router.delete('/documents/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await collections.documents().deleteOne({
-      $or: [{ id }, { _id: id }]
-    });
+    const result = await collections.documents().deleteOne(createIdQuery(id));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({
