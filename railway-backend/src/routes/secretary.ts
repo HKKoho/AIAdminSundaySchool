@@ -1,29 +1,159 @@
 import { Router } from 'express';
-import { getSessionStatus, sendMessage, sendBulkMessages } from '../services/whatsapp';
+import {
+  getSessionStatus,
+  sendMessage,
+  sendBulkMessages,
+  registerPastoralSession,
+  removePastoralSession,
+  getAllPastoralSessions,
+  sessionExists
+} from '../services/whatsapp';
 import { generateText } from '../services/ai';
 import { collections } from '../services/mongodb';
 import { logger } from '../utils/logger';
 
 const router = Router();
 
-// Get WhatsApp connection status
-router.get('/status', (req, res) => {
-  const status = getSessionStatus('secretary');
+// ============================================
+// Session Management Endpoints
+// ============================================
+
+// Register new pastoral member session
+router.post('/register', async (req, res) => {
+  try {
+    const { pastoralId, pastoralName, email, role } = req.body;
+
+    if (!pastoralId || !pastoralName) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing pastoralId or pastoralName'
+      });
+    }
+
+    const result = await registerPastoralSession(pastoralId, pastoralName, {
+      email,
+      role
+    });
+
+    if (result.success) {
+      res.json({
+        success: true,
+        message: `Session registered for ${pastoralName}. Please scan QR code.`,
+        pastoralId
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error: any) {
+    logger.error('Register session error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Remove pastoral member session
+router.delete('/session/:pastoralId', async (req, res) => {
+  try {
+    const { pastoralId } = req.params;
+
+    const result = await removePastoralSession(pastoralId);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        message: `Session ${pastoralId} removed`
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error: any) {
+    logger.error('Remove session error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get all pastoral sessions status
+router.get('/sessions', (req, res) => {
+  const sessions = getAllPastoralSessions();
   res.json({
-    connectionState: status.state,
-    qrCode: status.qrCode,
-    phoneNumber: status.phoneNumber
+    success: true,
+    sessions,
+    count: sessions.length
   });
 });
 
-// Generate report
+// Get specific pastoral session status (with QR code if pending)
+router.get('/status/:pastoralId', (req, res) => {
+  const { pastoralId } = req.params;
+  const status = getSessionStatus(pastoralId);
+
+  res.json({
+    pastoralId,
+    connectionState: status.state,
+    qrCode: status.qrCode,
+    phoneNumber: status.phoneNumber,
+    pastoralName: status.pastoralName
+  });
+});
+
+// Legacy: Get default session status (first pastoral or error)
+router.get('/status', (req, res) => {
+  const sessions = getAllPastoralSessions();
+
+  if (sessions.length === 0) {
+    return res.json({
+      connectionState: 'disconnected',
+      qrCode: '',
+      message: 'No pastoral sessions registered. Use POST /register to create one.'
+    });
+  }
+
+  // Return first session for backward compatibility
+  const firstSession = sessions[0];
+  const status = getSessionStatus(firstSession.pastoralId);
+
+  res.json({
+    connectionState: status.state,
+    qrCode: status.qrCode,
+    phoneNumber: status.phoneNumber,
+    pastoralId: firstSession.pastoralId,
+    pastoralName: status.pastoralName
+  });
+});
+
+// ============================================
+// AI Generation Endpoints
+// ============================================
+
+// Generate report (can specify pastoral context)
 router.post('/report', async (req, res) => {
   try {
-    const { events, tasks, language = 'en' } = req.body;
+    const { events, tasks, language = 'en', pastoralId } = req.body;
+
+    let pastoralContext = '';
+    if (pastoralId) {
+      const status = getSessionStatus(pastoralId);
+      if (status.pastoralName) {
+        pastoralContext = language === 'zh-TW'
+          ? `這是 ${status.pastoralName} 的報告。`
+          : `This is a report for ${status.pastoralName}.`;
+      }
+    }
 
     const systemPrompt = language === 'zh-TW'
-      ? `你是一位教會秘書助理。請根據提供的活動和任務生成一份簡潔的月度報告。使用繁體中文。`
-      : `You are a church secretary assistant. Generate a concise monthly report based on the events and tasks provided.`;
+      ? `你是一位教會秘書助理。${pastoralContext}請根據提供的活動和任務生成一份簡潔的月度報告。使用繁體中文。`
+      : `You are a church secretary assistant. ${pastoralContext}Generate a concise monthly report based on the events and tasks provided.`;
 
     const prompt = `Generate a monthly report for these events: ${JSON.stringify(events || [])} and tasks: ${JSON.stringify(tasks || [])}`;
 
@@ -45,11 +175,21 @@ router.post('/report', async (req, res) => {
 // Generate schedule
 router.post('/schedule', async (req, res) => {
   try {
-    const { events, language = 'en' } = req.body;
+    const { events, language = 'en', pastoralId } = req.body;
+
+    let pastoralContext = '';
+    if (pastoralId) {
+      const status = getSessionStatus(pastoralId);
+      if (status.pastoralName) {
+        pastoralContext = language === 'zh-TW'
+          ? `這是 ${status.pastoralName} 的日程表。`
+          : `This is the schedule for ${status.pastoralName}.`;
+      }
+    }
 
     const systemPrompt = language === 'zh-TW'
-      ? `你是一位教會秘書助理。請根據提供的活動生成今日和明日的日程表。使用繁體中文。格式簡潔清晰。`
-      : `You are a church secretary assistant. Generate a concise daily schedule for today and tomorrow based on the events provided.`;
+      ? `你是一位教會秘書助理。${pastoralContext}請根據提供的活動生成今日和明日的日程表。使用繁體中文。格式簡潔清晰。`
+      : `You are a church secretary assistant. ${pastoralContext}Generate a concise daily schedule for today and tomorrow based on the events provided.`;
 
     const prompt = `Generate a daily schedule for these events: ${JSON.stringify(events || [])}`;
 
@@ -74,7 +214,7 @@ router.post('/schedule', async (req, res) => {
 // Pastoral AI assistant
 router.post('/pastoral', async (req, res) => {
   try {
-    const { prompt, language = 'en' } = req.body;
+    const { prompt, language = 'en', pastoralId } = req.body;
 
     if (!prompt) {
       return res.status(400).json({
@@ -83,9 +223,19 @@ router.post('/pastoral', async (req, res) => {
       });
     }
 
+    let pastoralContext = '';
+    if (pastoralId) {
+      const status = getSessionStatus(pastoralId);
+      if (status.pastoralName) {
+        pastoralContext = language === 'zh-TW'
+          ? `你是 ${status.pastoralName} 的助理。`
+          : `You are the assistant for ${status.pastoralName}.`;
+      }
+    }
+
     const systemPrompt = language === 'zh-TW'
-      ? `你是一位教會牧養關懷助理。以溫暖、關懷的態度回應關於會友照顧、探訪和牧養的問題。使用繁體中文。`
-      : `You are a pastoral care assistant. Respond with warmth and care to questions about member care, visitation, and pastoral support.`;
+      ? `${pastoralContext}你是一位教會牧養關懷助理。以溫暖、關懷的態度回應關於會友照顧、探訪和牧養的問題。使用繁體中文。`
+      : `${pastoralContext}You are a pastoral care assistant. Respond with warmth and care to questions about member care, visitation, and pastoral support.`;
 
     const response = await generateText(prompt, systemPrompt);
 
@@ -133,19 +283,31 @@ router.post('/event', async (req, res) => {
   }
 });
 
-// Send WhatsApp message
+// ============================================
+// WhatsApp Messaging Endpoints
+// ============================================
+
+// Send WhatsApp message from specific pastoral member
 router.post('/send', async (req, res) => {
   try {
-    const { to, message } = req.body;
+    const { pastoralId, to, message } = req.body;
 
-    if (!to || !message) {
+    if (!pastoralId || !to || !message) {
       return res.status(400).json({
         success: false,
-        error: 'Missing recipient or message'
+        error: 'Missing pastoralId, recipient, or message'
       });
     }
 
-    const success = await sendMessage('secretary', to, message);
+    // Verify session exists
+    if (!sessionExists(pastoralId)) {
+      return res.status(404).json({
+        success: false,
+        error: `Pastoral session ${pastoralId} not found`
+      });
+    }
+
+    const success = await sendMessage(pastoralId, to, message);
 
     res.json({
       success,
@@ -160,19 +322,27 @@ router.post('/send', async (req, res) => {
   }
 });
 
-// Send bulk messages (notifications)
+// Send bulk messages (notifications) from specific pastoral member
 router.post('/notify', async (req, res) => {
   try {
-    const { recipients, message } = req.body;
+    const { pastoralId, recipients, message } = req.body;
 
-    if (!recipients || !Array.isArray(recipients) || !message) {
+    if (!pastoralId || !recipients || !Array.isArray(recipients) || !message) {
       return res.status(400).json({
         success: false,
-        error: 'Missing recipients array or message'
+        error: 'Missing pastoralId, recipients array, or message'
       });
     }
 
-    const result = await sendBulkMessages('secretary', recipients, message);
+    // Verify session exists
+    if (!sessionExists(pastoralId)) {
+      return res.status(404).json({
+        success: false,
+        error: `Pastoral session ${pastoralId} not found`
+      });
+    }
+
+    const result = await sendBulkMessages(pastoralId, recipients, message);
 
     res.json({
       success: true,
@@ -187,6 +357,10 @@ router.post('/notify', async (req, res) => {
     });
   }
 });
+
+// ============================================
+// Data Endpoints
+// ============================================
 
 // Get members from MongoDB
 router.get('/members', async (req, res) => {
@@ -215,6 +389,34 @@ router.get('/events', async (req, res) => {
     });
   } catch (error: any) {
     logger.error('Get events error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get message history for pastoral member
+router.get('/messages/:pastoralId', async (req, res) => {
+  try {
+    const { pastoralId } = req.params;
+
+    const session = await collections.whatsappSessions().findOne({ pastoralId });
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      receivedMessages: session.receivedMessages || [],
+      sentMessages: session.sentMessages || []
+    });
+  } catch (error: any) {
+    logger.error('Get messages error:', error);
     res.status(500).json({
       success: false,
       error: error.message

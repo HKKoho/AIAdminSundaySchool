@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { getSessionStatus, sendMessage } from '../services/whatsapp';
+import { getBookkeeperStatus, sendBookkeeperMessage } from '../services/whatsapp';
 import { generateText } from '../services/ai';
 import { collections } from '../services/mongodb';
 import { logger } from '../utils/logger';
@@ -18,7 +18,7 @@ const upload = multer({
 
 // Get WhatsApp connection status
 router.get('/status', (req, res) => {
-  const status = getSessionStatus('bookkeeper');
+  const status = getBookkeeperStatus();
   res.json({
     connectionState: status.state,
     qrCode: status.qrCode,
