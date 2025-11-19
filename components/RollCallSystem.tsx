@@ -744,17 +744,20 @@ const RollCallSystem: React.FC = () => {
 1. Overall engagement trends
 2. Members who may need pastoral attention (low attendance)
 3. Members with excellent engagement (potential leaders)
-Keep your response concise (3-5 bullet points).`;
+4. Late arrival patterns (benchmark: 9:45am Sunday service)
+Keep your response concise (4-6 bullet points). Include insights about punctuality when time data is available.`;
 
       const userPrompt = `Analyze this ${eventType} participation data (last 3 months):
 
 Total Records: ${data.totalRecords}
 Members: ${data.participationList.length}
 
+Note: Late arrival benchmark is 9:45am HKT for Sunday service. Check-in times after this are considered late.
+
 Top participation rates:
 ${participationSummary}
 
-Provide brief insights for church leadership.`;
+Provide brief insights for church leadership including any punctuality observations.`;
 
       const response = await fetch('/api/unified', {
         method: 'POST',
@@ -1116,7 +1119,9 @@ Provide detailed insights, statistics, and recommendations.`;
 
 ${analysisCsvData ? `Current CSV data preview:\n${analysisCsvData.substring(0, 1500)}` : 'No data uploaded yet.'}
 
-Help the user understand their data, suggest analyses, or answer questions about attendance patterns. Be specific and helpful.`;
+Important: The benchmark for late arrival is 9:45am HKT for Sunday service. Time data in CSV is in UTC format (HKT = UTC+8). Arrivals after 01:45 UTC are considered late.
+
+Help the user understand their data, suggest analyses, or answer questions about attendance patterns and late arrivals. Be specific and helpful.`;
 
         const conversationHistory = analysisChatHistory.slice(-10).map(msg => ({
           role: msg.role === 'system' ? 'assistant' : msg.role,
@@ -1372,9 +1377,13 @@ Help the user understand their data, suggest analyses, or answer questions about
       }
     };
 
-    // Parse multiple CSV files and aggregate participation
+    // Parse multiple CSV files and aggregate participation with late arrival detection
     const parseMultipleCsvFiles = (csvContents: string[]) => {
-      const memberMap = new Map<string, { name: string; totalEvents: number; attended: number; dates: string[] }>();
+      const memberMap = new Map<string, { name: string; totalEvents: number; attended: number; lateArrivals: number; dates: string[]; arrivalTimes: string[] }>();
+
+      // Benchmark: 9:45am HKT = 01:45:00 UTC
+      const LATE_ARRIVAL_HOUR_UTC = 1;
+      const LATE_ARRIVAL_MINUTE_UTC = 45;
 
       csvContents.forEach((content, fileIndex) => {
         const lines = content.split('\n').filter(line => line.trim());
@@ -1387,19 +1396,43 @@ Help the user understand their data, suggest analyses, or answer questions about
 
           const name = columns[0].trim();
           const status = columns[1].trim().toLowerCase();
+          const timeStr = columns[2]?.trim() || '';
           const isPresent = status.includes('present') || status.includes('出席') || status === 'yes' || status === '1';
 
           const existing = memberMap.get(name) || {
             name,
             totalEvents: 0,
             attended: 0,
-            dates: []
+            lateArrivals: 0,
+            dates: [],
+            arrivalTimes: []
           };
 
           existing.totalEvents++;
           if (isPresent) {
             existing.attended++;
             existing.dates.push(`File ${fileIndex + 1}`);
+
+            // Check for late arrival (after 9:45am HKT / 01:45 UTC)
+            if (timeStr) {
+              try {
+                const arrivalTime = new Date(timeStr);
+                const arrivalHour = arrivalTime.getUTCHours();
+                const arrivalMinute = arrivalTime.getUTCMinutes();
+
+                // Late if after 01:45 UTC (9:45am HKT)
+                if (arrivalHour > LATE_ARRIVAL_HOUR_UTC ||
+                    (arrivalHour === LATE_ARRIVAL_HOUR_UTC && arrivalMinute > LATE_ARRIVAL_MINUTE_UTC)) {
+                  existing.lateArrivals++;
+                  // Convert to HKT for display
+                  const hktHour = (arrivalHour + 8) % 24;
+                  const hktMinute = arrivalMinute;
+                  existing.arrivalTimes.push(`${hktHour.toString().padStart(2, '0')}:${hktMinute.toString().padStart(2, '0')}`);
+                }
+              } catch (e) {
+                // Invalid date format, skip
+              }
+            }
           }
 
           memberMap.set(name, existing);
@@ -1410,14 +1443,33 @@ Help the user understand their data, suggest analyses, or answer questions about
         ...member,
         participationRate: member.totalEvents > 0
           ? Math.round((member.attended / member.totalEvents) * 100)
+          : 0,
+        lateArrivalRate: member.attended > 0
+          ? Math.round((member.lateArrivals / member.attended) * 100)
           : 0
       }));
 
       participationList.sort((a, b) => b.participationRate - a.participationRate);
 
+      // Calculate late arrival statistics
+      const totalAttendances = participationList.reduce((sum, m) => sum + m.attended, 0);
+      const totalLateArrivals = participationList.reduce((sum, m) => sum + m.lateArrivals, 0);
+      const lateArrivalRate = totalAttendances > 0 ? Math.round((totalLateArrivals / totalAttendances) * 100) : 0;
+
+      // Get frequently late members (late more than 50% of their attendances)
+      const frequentlyLate = participationList
+        .filter(m => m.attended >= 2 && m.lateArrivalRate > 50)
+        .sort((a, b) => b.lateArrivalRate - a.lateArrivalRate);
+
       return {
         totalFiles: csvContents.length,
-        participationList
+        participationList,
+        lateArrivalStats: {
+          totalLateArrivals,
+          totalAttendances,
+          lateArrivalRate,
+          frequentlyLate: frequentlyLate.slice(0, 10)
+        }
       };
     };
 
@@ -1428,24 +1480,33 @@ Help the user understand their data, suggest analyses, or answer questions about
       try {
         const participationSummary = data.participationList
           .slice(0, 20)
-          .map((p: any) => `${p.name}: ${p.participationRate}% (${p.attended}/${p.totalEvents})`)
+          .map((p: any) => `${p.name}: ${p.participationRate}% (${p.attended}/${p.totalEvents})${p.lateArrivals > 0 ? ` [Late: ${p.lateArrivals}x]` : ''}`)
           .join('\n');
+
+        // Late arrival summary
+        const lateStats = data.lateArrivalStats || { totalLateArrivals: 0, totalAttendances: 0, lateArrivalRate: 0, frequentlyLate: [] };
+        const lateArrivalSummary = lateStats.frequentlyLate.length > 0
+          ? `\n\nFrequently Late Members (>50% late arrivals, benchmark 9:45am):\n${lateStats.frequentlyLate.map((m: any) => `${m.name}: ${m.lateArrivalRate}% late (${m.lateArrivals}/${m.attended})`).join('\n')}`
+          : '';
 
         const systemPrompt = `You are a church administrator AI assistant using PandasAI to analyze historical attendance data. Provide actionable insights based on the aggregated participation data from multiple CSV files. Focus on:
 1. Overall engagement patterns
 2. Members needing follow-up (low attendance)
 3. Highly engaged members (potential leaders)
-4. Trends and recommendations
-Keep response concise (4-6 bullet points).`;
+4. Late arrival patterns (benchmark: 9:45am Sunday service)
+5. Trends and recommendations
+Keep response concise (5-7 bullet points). Include at least one insight about punctuality/late arrivals.`;
 
         const userPrompt = `Analyze this aggregated participation data from ${data.totalFiles} CSV files:
 
 Total Members: ${data.participationList.length}
+Late Arrival Rate: ${lateStats.lateArrivalRate}% (${lateStats.totalLateArrivals} late out of ${lateStats.totalAttendances} attendances)
 
 Participation rates:
 ${participationSummary}
+${lateArrivalSummary}
 
-Provide insights for church leadership.`;
+Provide insights for church leadership including late arrival patterns.`;
 
         const response = await fetch('/api/unified', {
           method: 'POST',
@@ -1484,6 +1545,13 @@ Provide insights for church leadership.`;
           `File ${i + 1}:\n${content.substring(0, 500)}`
         ).join('\n\n');
 
+        const lateStats = pastDataParticipation?.lateArrivalStats || { totalLateArrivals: 0, totalAttendances: 0, lateArrivalRate: 0, frequentlyLate: [] };
+        const lateArrivalInfo = lateStats.totalAttendances > 0
+          ? `\nLate Arrival Stats (benchmark: 9:45am HKT):
+- Late arrivals: ${lateStats.totalLateArrivals} out of ${lateStats.totalAttendances} (${lateStats.lateArrivalRate}%)
+- Frequently late members: ${lateStats.frequentlyLate.map((m: any) => `${m.name} (${m.lateArrivalRate}%)`).join(', ') || 'None'}`
+          : '';
+
         const systemPrompt = `You are an AI assistant using PandasAI and OpenAI to analyze church attendance data. The user has uploaded ${pastDataFiles.length} CSV files with roll call data.
 
 Data preview:
@@ -1492,10 +1560,10 @@ ${csvPreview}
 ${pastDataParticipation ? `
 Aggregated stats:
 - Total members: ${pastDataParticipation.participationList.length}
-- Files analyzed: ${pastDataParticipation.totalFiles}
+- Files analyzed: ${pastDataParticipation.totalFiles}${lateArrivalInfo}
 ` : ''}
 
-Help analyze patterns, answer questions, and provide recommendations.`;
+Help analyze patterns, answer questions about attendance and late arrivals, and provide recommendations. The benchmark for late arrival is 9:45am Sunday service time.`;
 
         const conversationHistory = pastDataChatHistory.slice(-10).map(msg => ({
           role: msg.role === 'system' ? 'assistant' : msg.role,
